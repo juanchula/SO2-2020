@@ -38,7 +38,16 @@ void changeline(int line, char *txt){
     
 }
 
-int trylogin(char *user, char * userpassword){
+int trylogin(char *user, char * password){
+    char u[200] = "<";
+    char userpassword[200] = "";
+    strcat(u, user);
+    strcat(u, ">");
+    strcat(userpassword, u);
+    strcat(userpassword, "<<");
+    strcat(userpassword, password);
+    strcat(userpassword, ">>");
+
     char txt[200];
     int line = 0;
     char edit[200] = "";
@@ -48,15 +57,17 @@ int trylogin(char *user, char * userpassword){
         perror("No se a podido abrir el archivo: ");
         exit(EXIT_FAILURE);
     }
-
+    printf("%s %s %s.", user, password, userpassword);
     while(fgets(txt, 200, database)){
         if(strstr(txt, user) != NULL){
-            if(strstr(txt, userpassword) != NULL && strstr(txt, "$$$") != NULL){
+            printf("usuario correcto\n");
+            if(strstr(txt, userpassword) != NULL && strstr(txt, "$$$") == NULL){
+                printf("contraceña correcto\n");
                 //eliminar los $
                 fclose(database);
                 strcat(edit, userpassword);
                 strcat(edit, "\n");
-                changeline(line, userpassword);
+                changeline(line, edit);
                 return line;
             }else{
                 if(strstr(txt, "$$$") == NULL){
@@ -77,22 +88,6 @@ int trylogin(char *user, char * userpassword){
     return -1;
 }
 
-
-bool login(char *user, char * password){
-    char u[200] = "<";
-    char userpassword[200] = "";
-    int line;
-    strcat(u, user);
-    strcat(u, ">");
-    strcat(userpassword, u);
-    strcat(userpassword, "<<");
-    strcat(userpassword, password);
-    strcat(userpassword, ">>");
-    line = trylogin(user, userpassword); //si no la encuentra devuelve -1
-    return line;
-// sscanf(line, "%*s %s %*s %*s %*s %s", r, w);
-}
-
 void changepassword( int line, char *user, char *newpassword){
     char userpassword[200] = "<";
     strcat(userpassword, user);
@@ -105,6 +100,19 @@ void changepassword( int line, char *user, char *newpassword){
 
 int main()
 {
+    char user[200];
+    char password[200];
+    int line;
+
+    do{
+         scanf("%s",user);
+         scanf("%s",password);
+         //fgets( usuario, 199, stdin );
+         //fgets( password, 199, stdin );
+         printf("usuario ingresado:%s contraseña:%s\n", user, password);
+         line = trylogin(user, password);
+         printf("%i\n", line);
+    }while(1);
     // char * lastuser;
     // char * lastpassword;
     // int line;
