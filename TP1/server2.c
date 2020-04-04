@@ -41,7 +41,7 @@ int main(void){
         perror("Error en listen: ");
         exit(EXIT_FAILURE);
     }
-    fflush(stdout);
+    fflush(stdout); //fuerza la descarga del buffer
     fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
     lenght_client = (int32_t) sizeof (struct sockaddr_in);
     printf("Nuevo cliente aceptado\n");

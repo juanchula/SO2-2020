@@ -36,7 +36,7 @@ int main(void){
     }
 
     do{
-        fflush(stdout);
+        fflush(stdout); //fuerza la descarga del buffer
         fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
         lenght_client = (int32_t) sizeof (struct sockaddr_in);
         //fread(msj, 200, 1, fdc);

@@ -1,2 +1,4 @@
 usuario contraceña numintentos estado
-elva nanon 0 1
+<elva><<nanon>>$$$
+<tusa><<colchin>>$
+<nota><<10>>
