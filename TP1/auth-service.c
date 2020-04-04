@@ -13,22 +13,35 @@
 //     return strdup(final);
 // }
 
-int searchword(char *word){
+int trylogin(char *user, char * userpassword){
     FILE *database = fopen("/home/juanfernandez/Facu/SO2-2020/TP1/base-datos.txt", "r");
+    if(database == NULL){
+        perror("No se a podido abrir el archivo: ");
+        exit(EXIT_FAILURE);
+    }
     char txt[200];
     int line = 0;
 
     while(fgets(txt, 200, database)){
-        if(strstr(txt, word) != NULL){
-            return line;
+        if(strstr(txt, user) != NULL){
+            if(strstr(txt, userpassword) != NULL && strstr(txt, "$$$") != NULL){
+                //eliminar los $
+                fclose(database);
+                return line;
+            }else{
+                fclose(database);
+                //agregar un $
+                return -1;
+            }
         }
         line++;
     }
+    fclose(database);
     return -1;
-
 }
 
-bool logueo(char *user, char * password){
+
+bool login(char *user, char * password){
     char u[200] = "<";
     char userpassword[200] = "";
     int line;
@@ -38,18 +51,8 @@ bool logueo(char *user, char * password){
     strcat(userpassword, "<<");
     strcat(userpassword, password);
     strcat(userpassword, ">>");
-    line = searchword(user); //si no la encuentra devuelve -1
-    if(line>-1){
-        if(searchword(user)>-1){
-            if()
-        }else{
-            incorrectpass(line);
-            return false;
-        }
-    } else
-        return false;
-
-
+    line = trylogin(user, userpassword); //si no la encuentra devuelve -1
+    return line;
 // sscanf(line, "%*s %s %*s %*s %*s %s", r, w);
 }
 

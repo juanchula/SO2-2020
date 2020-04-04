@@ -17,7 +17,8 @@ int main()
     int line = 0;
 
     while(fgets(txt, 200, database)){
-        printf("%s linea:%i",txt,line);
+        printf("%s", database);
+        //printf("%s linea:%i",txt,line);
         line++;
     }
     return 0;
