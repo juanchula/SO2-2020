@@ -1,8 +1,6 @@
-<elva><<nanon>>
+<elva<>gin>$
 ?
-<tusa><<colchin>>$
+<admin<>1234>
 ?
-<admin><<1234>>
-?
-<juan><<10>>$$
+<juan<>10>$$$
 ?

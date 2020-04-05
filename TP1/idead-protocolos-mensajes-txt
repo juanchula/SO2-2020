@@ -1,6 +1,8 @@
 Base de dato:
-<Usuario><<contraceña>><<<1 o 0 dependiendo si esta habilitado>>><<<<Numero de intentos>>>>
 <Usuario><<contraceña>>$$$
+Ultimaconexcion (si no hay es <<<>>>)
+
+
 Comandos del lado del cliente:
 login usuario contraceña
 user ls

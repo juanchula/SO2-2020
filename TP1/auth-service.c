@@ -42,11 +42,11 @@ int trylogin(char *user, char * password){
     char u[200] = "<";
     char userpassword[200] = "";
     strcat(u, user);
-    strcat(u, ">");
+    strcat(u, "<");
     strcat(userpassword, u);
-    strcat(userpassword, "<<");
+    strcat(userpassword, ">");
     strcat(userpassword, password);
-    strcat(userpassword, ">>");
+    strcat(userpassword, ">");
 
     char txt[200];
     int line = 0;
@@ -59,10 +59,8 @@ int trylogin(char *user, char * password){
     }
     printf("%s %s %s.", user, password, userpassword);
     while(fgets(txt, 200, database)){
-        if(strstr(txt, user) != NULL){
-            printf("usuario correcto\n");
+        if(strstr(txt, u) != NULL){
             if(strstr(txt, userpassword) != NULL && strstr(txt, "$$$") == NULL){
-                printf("contraceña correcto\n");
                 //eliminar los $
                 fclose(database);
                 strcat(edit, userpassword);
@@ -71,6 +69,7 @@ int trylogin(char *user, char * password){
                 return line;
             }else{
                 if(strstr(txt, "$$$") == NULL){
+                    strtok(txt, "\n");
                     strcat(edit, txt);
                     strcat(edit, "$");
                     strcat(edit, "\n");
@@ -91,9 +90,9 @@ int trylogin(char *user, char * password){
 void changepassword( int line, char *user, char *newpassword){
     char userpassword[200] = "<";
     strcat(userpassword, user);
-    strcat(userpassword, "><<");
+    strcat(userpassword, "<>");
     strcat(userpassword, newpassword);
-    strcat(userpassword, ">>");
+    strcat(userpassword, ">\n");
     changeline(line, userpassword);
 }
 
@@ -104,6 +103,7 @@ int main()
     char password[200];
     int line;
 
+    changepassword(0, "elva", "gin");
     do{
          scanf("%s",user);
          scanf("%s",password);
