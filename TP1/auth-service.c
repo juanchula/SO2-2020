@@ -3,6 +3,10 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define BUFF_SIZE 200
+#define BASE_DATO "/home/juanfernandez/Facu/SO2-2020/TP1/base-datos.txt"
+#define BASE_DATO2 "/home/juanfernandez/Facu/SO2-2020/TP1/base-datos2.txt"
+
 // char * convert(char *txt){
 //     //char final[1024] = "<";
 //     char *final = malloc()
@@ -14,15 +18,15 @@
 // }
 void changeline(int line, char *txt){
     int i = 0;
-    char temp[200];
-    FILE *original = fopen("/home/juanfernandez/Facu/SO2-2020/TP1/base-datos.txt", "r");
-    FILE *new =  fopen("/home/juanfernandez/Facu/SO2-2020/TP1/base-datos2.txt", "w");
+    char temp[BUFF_SIZE];
+    FILE *original = fopen(BASE_DATO, "r");
+    FILE *new =  fopen(BASE_DATO2, "w");
     if(original == NULL || new == NULL){
         perror("No se a podido abrir el archivo: ");
         exit(EXIT_FAILURE);
     }
 
-    while (fgets(temp, 200, original)){
+    while (fgets(temp, BUFF_SIZE, original)){
         if(i==line){
             fputs(txt, new);
         }else{
@@ -33,14 +37,14 @@ void changeline(int line, char *txt){
     fclose(original);
     fclose(new);
 
-    remove("/home/juanfernandez/Facu/SO2-2020/TP1/base-datos.txt");
-    rename("/home/juanfernandez/Facu/SO2-2020/TP1/base-datos2.txt", "/home/juanfernandez/Facu/SO2-2020/TP1/base-datos.txt");
+    remove(BASE_DATO);
+    rename(BASE_DATO2, BASE_DATO);
     
 }
 
 int trylogin(char *user, char * password){
-    char u[200] = "<";
-    char userpassword[200] = "";
+    char u[BUFF_SIZE] = "<";
+    char userpassword[BUFF_SIZE] = "";
     strcat(u, user);
     strcat(u, "<");
     strcat(userpassword, u);
@@ -48,17 +52,17 @@ int trylogin(char *user, char * password){
     strcat(userpassword, password);
     strcat(userpassword, ">");
 
-    char txt[200];
+    char txt[BUFF_SIZE];
     int line = 0;
-    char edit[200] = "";
+    char edit[BUFF_SIZE] = "";
 
-    FILE *database = fopen("/home/juanfernandez/Facu/SO2-2020/TP1/base-datos.txt", "r");
+    FILE *database = fopen(BASE_DATO, "r");
     if(database == NULL){
         perror("No se a podido abrir el archivo: ");
         exit(EXIT_FAILURE);
     }
     printf("%s %s %s.", user, password, userpassword);
-    while(fgets(txt, 200, database)){
+    while(fgets(txt, BUFF_SIZE, database)){
         if(strstr(txt, u) != NULL){
             if(strstr(txt, userpassword) != NULL && strstr(txt, "$$$") == NULL){
                 //eliminar los $
@@ -88,7 +92,7 @@ int trylogin(char *user, char * password){
 }
 
 void changepassword( int line, char *user, char *newpassword){
-    char userpassword[200] = "<";
+    char userpassword[BUFF_SIZE] = "<";
     strcat(userpassword, user);
     strcat(userpassword, "<>");
     strcat(userpassword, newpassword);
@@ -99,8 +103,8 @@ void changepassword( int line, char *user, char *newpassword){
 
 int main()
 {
-    char user[200];
-    char password[200];
+    char user[BUFF_SIZE];
+    char password[BUFF_SIZE];
     int line;
 
     changepassword(0, "elva", "gin");
