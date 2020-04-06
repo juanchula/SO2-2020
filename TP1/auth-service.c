@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define BUFF_SIZE 200
 #define BASE_DATO "/home/juanfernandez/Facu/SO2-2020/TP1/base-datos.txt"
@@ -42,6 +43,15 @@ void changeline(int line, char *txt){
     
 }
 
+void datatime(int line){
+    time_t tiempo = time(0);
+    struct tm *tlocal = localtime(&tiempo);
+    char day_hour[128];
+    strftime(day_hour,128,"%d/%m/%y %H:%M:%S",tlocal);
+    strcat(day_hour, "\n");
+    changeline(line, day_hour);
+}
+
 int trylogin(char *user, char * password){
     char u[BUFF_SIZE] = "<";
     char userpassword[BUFF_SIZE] = "";
@@ -70,6 +80,7 @@ int trylogin(char *user, char * password){
                 strcat(edit, userpassword);
                 strcat(edit, "\n");
                 changeline(line, edit);
+                datatime(line+1);
                 return line;
             }else{
                 if(strstr(txt, "$$$") == NULL){
@@ -106,8 +117,10 @@ int main()
     char user[BUFF_SIZE];
     char password[BUFF_SIZE];
     int line;
-
-    changepassword(0, "elva", "gin");
+    // char sent_msg[BUFF_SIZE];
+    // char recv_msg[BUFF_SIZE];
+    // if()
+    // changepassword(0, "elva", "gin");
     do{
          scanf("%s",user);
          scanf("%s",password);
