@@ -2,7 +2,19 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
+int amountspace(char * txt){
+    int space = 0;
+    //int length = sizeof(txt);
+    int length =(int) strlen(txt);
+    for (int i = 0; i < length; i++){
+        if(txt[i] == ' '){
+            space++;
+        }
+    }
+    return space;
+}
 
 int main()
 {
@@ -33,11 +45,11 @@ int main()
     
 
 
-        time_t tiempo = time(0);
-        struct tm *tlocal = localtime(&tiempo);
-        char output[128];
-        strftime(output,128,"%d/%m/%y %H:%M:%S",tlocal);
-        printf("%s\n",output);
+        // time_t tiempo = time(0);
+        // struct tm *tlocal = localtime(&tiempo);
+        // char output[128];
+        // strftime(output,128,"%d/%m/%y %H:%M:%S",tlocal);
+        // printf("%s\n",output);
 
 
 
@@ -57,7 +69,17 @@ int main()
     //     line++;
     // }
 
-
+    // char recv_msg[200] = "Hola capo que tal\n";
+    // int space = amountspace(recv_msg);
+    // char a[200];
+    // char b[200];
+    // char c[200];
+    char hol[200] = "hola capo asdasd asd asdasfas qwfasf qwef qasdfasd";
+    strcpy(hol, "ia tu sabe");
+    //sscanf(recv_msg, "%s %s %*s %*s %*s %*s %s", a, b, c);
+    
+    //printf("%s %i , %s, %s, %s", recv_msg,  space , a, b, c);
+    printf("%s", hol);
     
     return 0;
 }

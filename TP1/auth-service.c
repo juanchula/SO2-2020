@@ -17,6 +17,17 @@
 //     free(final);
 //     return strdup(final);
 // }
+int amountspace(char * txt){
+    int space = 0;
+    int length =(int) strlen(txt);
+    for (int i = 0; i < length; i++){
+        if(txt[i] == ' '){
+            space++;
+        }
+    }
+    return space;
+}
+
 void changeline(int line, char *txt){
     int i = 0;
     char temp[BUFF_SIZE];
@@ -71,7 +82,6 @@ int trylogin(char *user, char * password){
         perror("No se a podido abrir el archivo: ");
         exit(EXIT_FAILURE);
     }
-    printf("%s %s %s.", user, password, userpassword);
     while(fgets(txt, BUFF_SIZE, database)){
         if(strstr(txt, u) != NULL){
             if(strstr(txt, userpassword) != NULL && strstr(txt, "$$$") == NULL){
@@ -116,11 +126,61 @@ int main()
 {
     char user[BUFF_SIZE];
     char password[BUFF_SIZE];
-    int line;
-    // char sent_msg[BUFF_SIZE];
-    // char recv_msg[BUFF_SIZE];
-    // if()
-    // changepassword(0, "elva", "gin");
+    int line = -1;
+    int space;
+    char argone[BUFF_SIZE];
+    char argtwo[BUFF_SIZE];
+    char argthree[BUFF_SIZE];
+    char sent_msg[BUFF_SIZE];
+    char recv_msg[BUFF_SIZE];
+
+    do{
+        bzero(recv_msg, BUFF_SIZE);
+        fgets(recv_msg, BUFF_SIZE-1, stdin);
+        strtok(recv_msg, "\n");
+        space = amountspace(recv_msg);
+        switch (space){
+        case 0: if(strstr(recv_msg, "exit") && line > -1){
+                    line = -1;
+                    strcpy(sent_msg, "Se ha cerrado sesion correctamente");
+                }else
+                    strcpy(sent_msg, "Comando incorrecto");
+            break;
+        
+        case 1: sscanf(recv_msg, "%s %s", argone, argtwo);
+                if(strstr(argone, "user") && strstr(argtwo, "ls") && line > -1){
+                    //ENVIAR LISTA DE USUARIO
+                }else
+                    strcpy(sent_msg, "Comando incorrecto");
+                bzero(argone, BUFF_SIZE);
+                bzero(argtwo, BUFF_SIZE);
+            break;
+    
+        case 2: sscanf(recv_msg, "%s %s %s", argone, argtwo, argthree);
+                if(strstr(argone, "user") && strstr(argtwo, "passwd") && line > -1){
+                    strcpy(password, argthree);
+                    changepassword(line, user, password);
+                    strcpy(sent_msg, "Se ha cambiado la contraseña correctamente");
+                }else{
+                    if(strstr(argone, "login") && line == -1){
+                        strcpy(user, argtwo);
+                        strcpy(password, argthree);
+                        line = trylogin(user, password);
+                        if(line == -1)
+                            strcpy(sent_msg, "Datos erroneos");
+                    }else
+                        strcpy(sent_msg, "Comando incorrecto");
+                }
+                bzero(argone, BUFF_SIZE);
+                bzero(argtwo, BUFF_SIZE);
+                bzero(argthree, BUFF_SIZE);
+            break;
+        }
+        printf("Base de datos: %s\n", sent_msg);
+        bzero(sent_msg, BUFF_SIZE);
+    }while(1);
+
+    //sscanf(recv_msg, "%*s %s %*s %*s %*s %s", command, subcommand);
     do{
          scanf("%s",user);
          scanf("%s",password);
