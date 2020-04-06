@@ -176,7 +176,7 @@ int main()
                 bzero(argthree, BUFF_SIZE);
             break;
         }
-        printf("Base de datos: %s\n", sent_msg);
+        printf("Base de datos:%s\n", sent_msg);
         bzero(sent_msg, BUFF_SIZE);
     }while(1);
 
