@@ -5,29 +5,9 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <string.h>
-#define MAX 200 
 
-/*
-void func(int sockfd) 
-{ 
-    char buff[MAX]; 
-    int n; 
-    do { 
-        bzero(buff, sizeof(buff)); 
-        printf("Enter the string : "); 
-        n = 0; 
-        while ((buff[n++] = getchar()) != '\n') 
-            ; 
-        write(sockfd, buff, sizeof(buff)); 
-        bzero(buff, sizeof(buff)); 
-        read(sockfd, buff, sizeof(buff)); 
-        printf("From Server : %s", buff); 
-        if ((strncmp(buff, "exit", 4)) == 0) { 
-            printf("Client Exit...\n"); 
-            break; 
-        }
-    } while(1); 
-} */
+#define MAX 200 
+#define PORT 4444
 
 int main() 
 {
@@ -45,7 +25,7 @@ int main()
     // create and assign IP, PORT 
     struct sockaddr_in * servaddr = calloc(1, sizeof (struct sockaddr_in));
     servaddr->sin_family = AF_INET;
-    servaddr->sin_port = htons(4444);
+    servaddr->sin_port = htons(PORT);
     servaddr->sin_addr.s_addr = INADDR_ANY;
   
     // connect the client socket to server socket 
@@ -64,6 +44,5 @@ int main()
         bzero(msjclient, sizeof(msjclient)); 
     }while(1); 
   
-    // close the socket 
     close(sockfd); 
 } 

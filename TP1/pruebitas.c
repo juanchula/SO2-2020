@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <dirent.h>
 
 int amountspace(char * txt){
     int space = 0;
@@ -75,7 +76,7 @@ int main()
     //     line++;
     // }
 
-    char recv_msg[200] = "<elva<>gin>$$";
+    //char recv_msg[200] = "<elva<>gin>$$";
     //int space = amountspace(recv_msg);
     //  char a[200];
     //  char b[200];
@@ -97,8 +98,23 @@ int main()
     //     printf("Habilitado");
     // }
 
-    resetchar(recv_msg);
-    printf("%s", recv_msg);
+    // resetchar(recv_msg);
+    // printf("%s", recv_msg);
+
+
+    
+    DIR *d = opendir(".");
+    struct dirent *dentry;
+    size_t i=1;
+
+    dentry=readdir(d);
+    while((dentry !=NULL ))
+    {
+    printf("%lu. %s\n", i, dentry->d_name);
+    dentry=readdir(d);
+    }
+    
+    return 0;
          
 
     return 0;

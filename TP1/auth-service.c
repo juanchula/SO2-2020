@@ -8,18 +8,8 @@
 #define BUFF_SIZE 200
 #define BASE_DATO "/home/juanfernandez/Facu/SO2-2020/TP1/base-datos.txt"
 #define BASE_DATO2 "/home/juanfernandez/Facu/SO2-2020/TP1/base-datos2.txt"
+#define QUEUEPATH "/auth_service"
 
-#define QUEUEPATH "/authservice" 
-
-// char * convert(char *txt){
-//     //char final[1024] = "<";
-//     char *final = malloc()
-//     strcat(final, txt);
-//     strcat(final, ">");
-//     char *send = strdup(final);
-//     free(final);
-//     return strdup(final);
-// }
 int amountspace(char * txt){
     int space = 0;
     int length =(int) strlen(txt);
@@ -53,8 +43,7 @@ void changeline(int line, char *txt){
     fclose(new);
 
     remove(BASE_DATO);
-    rename(BASE_DATO2, BASE_DATO);
-    
+    rename(BASE_DATO2, BASE_DATO); 
 }
 
 void datatime(int line){
@@ -85,10 +74,10 @@ int trylogin(char *user, char * password){
         perror("No se a podido abrir el archivo: ");
         exit(EXIT_FAILURE);
     }
+
     while(fgets(txt, BUFF_SIZE, database)){
         if(strstr(txt, u) != NULL){
             if(strstr(txt, userpassword) != NULL && strstr(txt, "$$$") == NULL){
-                //eliminar los $
                 fclose(database);
                 strcat(edit, userpassword);
                 strcat(edit, "\n");
@@ -104,7 +93,6 @@ int trylogin(char *user, char * password){
                     fclose(database);
                     changeline(line, edit);
                     return -1;
-                    //agregar $
                 }
                 break;
             }
@@ -159,11 +147,18 @@ void lsuser(char * lsu){
         }
         line++;
     }
+    fclose(database);
 }
 
+bool comparetxt(int length, char *txt, char *searchtxt){
+    if(length == (int) strlen(txt) && strstr(txt, searchtxt) != NULL){
+        return true;
+    }else{
+        return false;
+    }
+}
 
-int main()
-{
+int main(){
     char user[BUFF_SIZE];
     char password[BUFF_SIZE];
     int line = -1;
@@ -176,25 +171,22 @@ int main()
 
     mqd_t qd = mq_open(QUEUEPATH, O_RDWR);
     if (qd == -1){
-            perror("Creating queue");
+            perror("Error al abrir la cola en el servicio de autentificacion: ");
             exit(EXIT_FAILURE);
     }
     unsigned int prio = 1;
 
     do{
-
         bzero(recv_msg, BUFF_SIZE);
-
         if (mq_receive(qd, recv_msg, BUFF_SIZE, &prio) == -1 ){
-                    perror("Receiving");
+                    perror("Error al recibir mensaje en el servicio de autentificacion: ");
                     exit(EXIT_FAILURE);
             }
 
-        //fgets(recv_msg, BUFF_SIZE-1, stdin);
         strtok(recv_msg, "\n");
         space = amountspace(recv_msg);
         switch (space){
-        case 0: if(strstr(recv_msg, "logout") && line > -1){
+        case 0: if(comparetxt(6, recv_msg, "logout") && line > -1){
                     line = -1;
                     strcpy(sent_msg, "Se ha cerrado sesion correctamente");
                 }else
@@ -202,7 +194,7 @@ int main()
             break;
         
         case 1: sscanf(recv_msg, "%s %s", argone, argtwo);
-                if(strstr(argone, "user") && strstr(argtwo, "ls") && line > -1){
+                if(comparetxt(4, argone, "user") && comparetxt(2, argtwo, "ls") && line > -1){
                     lsuser(sent_msg);
                 }else
                     strcpy(sent_msg, "Comando incorrecto");
@@ -211,12 +203,12 @@ int main()
             break;
     
         case 2: sscanf(recv_msg, "%s %s %s", argone, argtwo, argthree);
-                if(strstr(argone, "user") && strstr(argtwo, "passwd") && line > -1){
+                if(comparetxt(4, argone, "user") && comparetxt(6, argtwo, "passwd") && line > -1){
                     strcpy(password, argthree);
                     changepassword(line, user, password);
                     strcpy(sent_msg, "Se ha cambiado la contraseña correctamente");
                 }else{
-                    if(strstr(argone, "login") && line == -1){
+                    if(comparetxt(5, argone, "login") && line == -1){
                         strcpy(user, argtwo);
                         strcpy(password, argthree);
                         line = trylogin(user, password);
@@ -233,31 +225,12 @@ int main()
                 bzero(argthree, BUFF_SIZE);
             break;
         }
-        //printf("Base de datos: %s\n", sent_msg);
 
         if (  mq_send(qd, sent_msg, BUFF_SIZE, (unsigned int) 1) == -1){
-            perror("Sending");
+            perror("Error en envio de mensaje de servicio de autentificacion: ");
             exit(EXIT_FAILURE);
         }
-
         bzero(sent_msg, BUFF_SIZE);
     }while(1);
-
-    //sscanf(recv_msg, "%*s %s %*s %*s %*s %s", command, subcommand);
-    do{
-         scanf("%s",user);
-         scanf("%s",password);
-         //fgets( usuario, 199, stdin );
-         //fgets( password, 199, stdin );
-         printf("usuario ingresado:%s contraseña:%s\n", user, password);
-         line = trylogin(user, password);
-         printf("%i\n", line);
-    }while(1);
-    // char * lastuser;
-    // char * lastpassword;
-    // int line;
-    // char * hola = "Hola";
-    // hola = convert(hola);
-    // printf("%s", hola);
     return 0;
 }
