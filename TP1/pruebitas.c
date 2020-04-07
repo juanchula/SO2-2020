@@ -103,19 +103,17 @@ int main()
 
 
     
-    DIR *d = opendir(".");
+    DIR *d = opendir("./isos");
     struct dirent *dentry;
-    size_t i=1;
 
-    dentry=readdir(d);
-    while((dentry !=NULL ))
-    {
-    printf("%lu. %s\n", i, dentry->d_name);
-    dentry=readdir(d);
+    if(d != NULL){
+        while((dentry=readdir(d)) != NULL){
+        printf("%s\n", dentry->d_name);
+        }
+        closedir(d);
+    }else{
+        perror("No se ha podido abrir el directorio: ");
+        return (EXIT_FAILURE);
     }
-    
-    return 0;
-         
-
     return 0;
 }

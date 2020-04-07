@@ -6,8 +6,8 @@
 #include <mqueue.h>
 
 #define BUFF_SIZE 200
-#define BASE_DATO "/home/juanfernandez/Facu/SO2-2020/TP1/base-datos.txt"
-#define BASE_DATO2 "/home/juanfernandez/Facu/SO2-2020/TP1/base-datos2.txt"
+#define BASE_DATO "./base-datos.txt"
+#define BASE_DATO2 "./base-datos2.txt"
 #define QUEUEPATH "/auth_service"
 
 int amountspace(char * txt){
