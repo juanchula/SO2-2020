@@ -16,6 +16,12 @@ int amountspace(char * txt){
     return space;
 }
 
+void resetchar( char * txt){
+    bzero(txt, 200);
+    strcat(txt, "holi");
+    strcat(txt, "\n");
+}
+
 int main()
 {
     // int line = 5;
@@ -69,17 +75,31 @@ int main()
     //     line++;
     // }
 
-    // char recv_msg[200] = "Hola capo que tal\n";
-    // int space = amountspace(recv_msg);
-    // char a[200];
-    // char b[200];
-    // char c[200];
-    char hol[200] = "hola capo asdasd asd asdasfas qwfasf qwef qasdfasd";
-    strcpy(hol, "ia tu sabe");
-    //sscanf(recv_msg, "%s %s %*s %*s %*s %*s %s", a, b, c);
+    char recv_msg[200] = "<elva<>gin>$$";
+    //int space = amountspace(recv_msg);
+    //  char a[200];
+    //  char b[200];
+    //  char c[200];
+    //char hol[200] = "hola capo asdasd asd asdasfas qwfasf qwef qasdfasd";
+    //strcpy(hol, "ia tu sabe");
+    //sscanf(recv_msg, "%s %s %*s %*s %s", a, b, c);
     
     //printf("%s %i , %s, %s, %s", recv_msg,  space , a, b, c);
-    printf("%s", hol);
+    //printf("%s", hol);
     
+    // strcpy(a, strtok(recv_msg, "<"));
+    // //strcpy(a, strtok(recv_msg, "<"));
+    // printf("%s\n Mensaje que quedo:%s\n", a, recv_msg);
+    // strcpy(a, strtok(NULL, ">"));
+    // // strcpy(a, strtok(recv_msg, ">"));
+    // printf("%s\n Mensaje que quedo:%s\n", a, recv_msg);
+    // if(strstr(recv_msg, "$$$") == NULL){
+    //     printf("Habilitado");
+    // }
+
+    resetchar(recv_msg);
+    printf("%s", recv_msg);
+         
+
     return 0;
 }

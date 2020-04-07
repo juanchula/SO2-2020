@@ -121,6 +121,43 @@ void changepassword( int line, char *user, char *newpassword){
     changeline(line, userpassword);
 }
 
+void lsuser(char * lsu){
+    bzero(lsu, BUFF_SIZE);
+    char txt[BUFF_SIZE];
+    int line = 0;
+    bool habilitado;
+    FILE *database = fopen(BASE_DATO, "r");
+    if(database == NULL){
+        perror("No se a podido abrir el archivo: ");
+        exit(EXIT_FAILURE);
+    }
+
+    while(fgets(txt, BUFF_SIZE, database)){
+        //strtok(txt, "\n");
+        if(line % 2 == 0){
+            if(strstr(txt, "$$$") != NULL){
+                habilitado = false;
+            }else{
+                habilitado = true;
+            }
+            strcat(lsu, strtok(txt, "<"));
+            strcat(lsu, "   ");
+            if(habilitado){
+                strcat(lsu, "Habilitado   ");
+            }else{
+                strcat(lsu, "Bloqueado   ");
+            }
+        }else{
+            if(strstr(txt, "?")){
+                strcat(lsu, "No disponible\n");
+            }else{
+                strcat(lsu, txt);
+            }
+        }
+        line++;
+    }
+}
+
 
 int main()
 {
@@ -149,7 +186,7 @@ int main()
         
         case 1: sscanf(recv_msg, "%s %s", argone, argtwo);
                 if(strstr(argone, "user") && strstr(argtwo, "ls") && line > -1){
-                    //ENVIAR LISTA DE USUARIO
+                    lsuser(sent_msg);
                 }else
                     strcpy(sent_msg, "Comando incorrecto");
                 bzero(argone, BUFF_SIZE);
@@ -166,8 +203,11 @@ int main()
                         strcpy(user, argtwo);
                         strcpy(password, argthree);
                         line = trylogin(user, password);
-                        if(line == -1)
+                        if(line == -1){
                             strcpy(sent_msg, "Datos erroneos");
+                        }else{
+                            strcpy(sent_msg, "Se ha logueado correctamente");
+                        }
                     }else
                         strcpy(sent_msg, "Comando incorrecto");
                 }
@@ -176,7 +216,7 @@ int main()
                 bzero(argthree, BUFF_SIZE);
             break;
         }
-        printf("Base de datos:%s\n", sent_msg);
+        printf("Base de datos: %s\n", sent_msg);
         bzero(sent_msg, BUFF_SIZE);
     }while(1);
 
