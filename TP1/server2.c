@@ -8,6 +8,7 @@
 #include <mqueue.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdbool.h>
 #define MAX 200 
 
 #define QUEUEPATH "/authservice" 
@@ -18,6 +19,7 @@ int main(void){
     char msjclient[MAX]; 
     int sfd;
     int fdc;
+    bool connected = false;
 
     sfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sfd == -1) { 
@@ -64,34 +66,51 @@ int main(void){
     fflush(stdout); //fuerza la descarga del buffer
     fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
     lenght_client = (int32_t) sizeof (struct sockaddr_in);
+    connected = true;
     printf("Nuevo cliente aceptado\n");
-    
     do{
-        bzero(msjclient, MAX); 
-        recv(fdc,msjclient, MAX, 0);
-        //printf("%s\n", msjclient);
-        //bzero(msjclient, MAX); 
-        strcpy(sent_msg, msjclient);
-
-
-        if (  mq_send(qd, sent_msg, MAX, (unsigned int) 1) == -1){
-            perror("Sending");
-            exit(EXIT_FAILURE);
-        }
-        bzero(sent_msg, MAX);
-        
-        if (mq_receive(qd, recv_msg, MAX, &prio) == -1 ){
-                    perror("Receiving");
-                    exit(EXIT_FAILURE);
+        while(connected){
+            bzero(msjclient, MAX); 
+            recv(fdc,msjclient, MAX, 0);
+            //printf("%s\n", msjclient);
+            //bzero(msjclient, MAX); 
+            if(strstr(msjclient, "exit") != NULL && (int) strlen(msjclient) == 5){
+                connected = false;
+                strcpy(sent_msg, "logout");
+                if (  mq_send(qd, sent_msg, MAX, (unsigned int) 1) == -1){
+                perror("Sending");
+                exit(EXIT_FAILURE);
+                }
+                if (mq_receive(qd, recv_msg, MAX, &prio) == -1 ){
+                        perror("Receiving");
+                        exit(EXIT_FAILURE);
+                }
+                bzero(recv_msg, MAX);
+                break;
             }
-        //printf("%s\n", recv_msg);
-        strcpy(msjserver, recv_msg);
-        bzero(recv_msg, MAX);
+            strcpy(sent_msg, msjclient);
+            if (  mq_send(qd, sent_msg, MAX, (unsigned int) 1) == -1){
+                perror("Sending");
+                exit(EXIT_FAILURE);
+            }
+            bzero(sent_msg, MAX);
+            
+            if (mq_receive(qd, recv_msg, MAX, &prio) == -1 ){
+                        perror("Receiving");
+                        exit(EXIT_FAILURE);
+                }
+            //printf("%s\n", recv_msg);
+            strcpy(msjserver, recv_msg);
+            bzero(recv_msg, MAX);
 
 
-        //fgets( msjserver, MAX-1, stdin );
-        send(fdc, msjserver, MAX, 0);
-        bzero(msjserver, MAX); 
+            //fgets( msjserver, MAX-1, stdin );
+            send(fdc, msjserver, MAX, 0);
+            bzero(msjserver, MAX); 
+        }
+        fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
+        lenght_client = (int32_t) sizeof (struct sockaddr_in);
+        connected = true;
     }while(1);
 
     return 0;

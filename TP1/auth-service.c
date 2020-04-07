@@ -194,7 +194,7 @@ int main()
         strtok(recv_msg, "\n");
         space = amountspace(recv_msg);
         switch (space){
-        case 0: if(strstr(recv_msg, "exit") && line > -1){
+        case 0: if(strstr(recv_msg, "logout") && line > -1){
                     line = -1;
                     strcpy(sent_msg, "Se ha cerrado sesion correctamente");
                 }else
