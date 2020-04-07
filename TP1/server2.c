@@ -5,11 +5,12 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <string.h>
+#include <mqueue.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #define MAX 200 
 
-int login(char * msj){
-    
-}
+#define QUEUEPATH "/authservice" 
 
 int main(void){
     //int num_port = 4444;
@@ -41,17 +42,54 @@ int main(void){
         perror("Error en listen: ");
         exit(EXIT_FAILURE);
     }
+
+
+
+
+    struct mq_attr queue_atributes = {0};
+    queue_atributes.mq_maxmsg  = 10 ;
+    queue_atributes.mq_msgsize = MAX ;
+
+    /* permission macros(the ones starting with S_) can vi viewed in man 2 open */
+    mqd_t qd = mq_open(QUEUEPATH, O_RDWR | O_CREAT, 0666 , &queue_atributes);
+    if (qd == -1){
+            perror("Creating queue");
+            exit(EXIT_FAILURE);
+    }
+    char sent_msg[MAX];
+    char recv_msg[MAX];
+    unsigned int prio = 1;
+
+
     fflush(stdout); //fuerza la descarga del buffer
     fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
     lenght_client = (int32_t) sizeof (struct sockaddr_in);
     printf("Nuevo cliente aceptado\n");
-
+    
     do{
-        recv(fdc,msjclient, MAX, 0);
-        printf("%s\n", msjclient);
         bzero(msjclient, MAX); 
+        recv(fdc,msjclient, MAX, 0);
+        //printf("%s\n", msjclient);
+        //bzero(msjclient, MAX); 
+        strcpy(sent_msg, msjclient);
 
-        fgets( msjserver, MAX-1, stdin );
+
+        if (  mq_send(qd, sent_msg, MAX, (unsigned int) 1) == -1){
+            perror("Sending");
+            exit(EXIT_FAILURE);
+        }
+        bzero(sent_msg, MAX);
+        
+        if (mq_receive(qd, recv_msg, MAX, &prio) == -1 ){
+                    perror("Receiving");
+                    exit(EXIT_FAILURE);
+            }
+        //printf("%s\n", recv_msg);
+        strcpy(msjserver, recv_msg);
+        bzero(recv_msg, MAX);
+
+
+        //fgets( msjserver, MAX-1, stdin );
         send(fdc, msjserver, MAX, 0);
         bzero(msjserver, MAX); 
     }while(1);

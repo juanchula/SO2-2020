@@ -3,10 +3,13 @@
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
+#include <mqueue.h>
 
 #define BUFF_SIZE 200
 #define BASE_DATO "/home/juanfernandez/Facu/SO2-2020/TP1/base-datos.txt"
 #define BASE_DATO2 "/home/juanfernandez/Facu/SO2-2020/TP1/base-datos2.txt"
+
+#define QUEUEPATH "/authservice" 
 
 // char * convert(char *txt){
 //     //char final[1024] = "<";
@@ -171,9 +174,23 @@ int main()
     char sent_msg[BUFF_SIZE];
     char recv_msg[BUFF_SIZE];
 
+    mqd_t qd = mq_open(QUEUEPATH, O_RDWR);
+    if (qd == -1){
+            perror("Creating queue");
+            exit(EXIT_FAILURE);
+    }
+    unsigned int prio = 1;
+
     do{
+
         bzero(recv_msg, BUFF_SIZE);
-        fgets(recv_msg, BUFF_SIZE-1, stdin);
+
+        if (mq_receive(qd, recv_msg, BUFF_SIZE, &prio) == -1 ){
+                    perror("Receiving");
+                    exit(EXIT_FAILURE);
+            }
+
+        //fgets(recv_msg, BUFF_SIZE-1, stdin);
         strtok(recv_msg, "\n");
         space = amountspace(recv_msg);
         switch (space){
@@ -216,7 +233,13 @@ int main()
                 bzero(argthree, BUFF_SIZE);
             break;
         }
-        printf("Base de datos: %s\n", sent_msg);
+        //printf("Base de datos: %s\n", sent_msg);
+
+        if (  mq_send(qd, sent_msg, BUFF_SIZE, (unsigned int) 1) == -1){
+            perror("Sending");
+            exit(EXIT_FAILURE);
+        }
+
         bzero(sent_msg, BUFF_SIZE);
     }while(1);
 
