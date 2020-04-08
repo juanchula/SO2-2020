@@ -59,8 +59,8 @@ int main()
             bzero(msjserver, MAX); 
 
             recv(sockfd,msjclient, MAX, 0);
-            printf("%s", msjclient);
-            if(strstr(msjserver, "Conectar puerto de transferencia.")){
+            printf("%s\n", msjclient);
+            if(strstr(msjclient, "Conectar puerto de transferencia.") != NULL){
                 transfer = true;
             }
             bzero(msjclient, sizeof(msjclient)); 
@@ -69,15 +69,20 @@ int main()
             perror("connection with the server failed...\n"); 
             exit(EXIT_FAILURE);
         }
+        printf("CLIENTE: INCIANDO RECEPCION \n");
         bzero(msjclient, MAX);
         int recibido = -1;
         FILE *image = fopen("./isoscopia/nada", "wb");
-        while((recibido = (int)recv(sockfile, msjserver, MAX, 0)) > 0){
-            printf("%s\n",msjserver);
-            fwrite(msjserver,sizeof(char),1,image);
+        while((recibido = (int)recv(sockfile, msjclient, MAX, 0)) > 0){
+            if(strstr(msjclient, "LISTORTI") != NULL)
+                break;
+            //printf("%s",msjclient);
+            fwrite(msjclient,sizeof(char),1,image);
         }
         fclose(image);
+        bzero(msjclient, MAX);
         transfer = false;
+        printf("CLIENTE: FINALIZADO RECEPCION \n");
     } 
   
     close(sockfd); 

@@ -269,7 +269,11 @@ int main(){
                 perror("Error al enviar el arvhivo:");
             }
         }
-
+        strcpy(sent_msg, "LISTORTI");
+        if(send(fdc,sent_msg,BUFF_SIZE,0) == -1){
+            perror("Error al enviar el arvhivo:");
+        }
+        printf("Se termino la transferencia \n");
         bzero(argthree, BUFF_SIZE);
         bzero(filetransfer, BUFF_SIZE);
         bzero(sent_msg, BUFF_SIZE);
