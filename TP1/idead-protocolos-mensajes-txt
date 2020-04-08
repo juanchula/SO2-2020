@@ -14,4 +14,20 @@ file down <nombre_de_la_imagen>
 instalar:
 sudo apt-get install libssl-dev
 
-gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o file file_service.c -lrt -lssl -lcrypto
+
+
+->Compilacion:
+Cliente:
+gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o cliente  client.c && ./cliente
+
+Servidor principal:
+gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o servidor  server2.c -lrt && ./servidor
+
+Servicio de auth:
+gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o au auth-service.c -lrt && ./au
+
+Servicio de archivo:
+gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o file file_service.c -lrt -lssl -lcrypto && ./file
+
+pruebita:
+gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o pruebitas pruebitas.c && ./pruebitas

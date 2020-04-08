@@ -103,17 +103,20 @@ int main()
 
 
     
-    DIR *d = opendir("./isos");
-    struct dirent *dentry;
+    // DIR *d = opendir("./isos");
+    // struct dirent *dentry;
 
-    if(d != NULL){
-        while((dentry=readdir(d)) != NULL){
-        printf("%s\n", dentry->d_name);
-        }
-        closedir(d);
-    }else{
-        perror("No se ha podido abrir el directorio: ");
-        return (EXIT_FAILURE);
-    }
+    // if(d != NULL){
+    //     while((dentry=readdir(d)) != NULL){
+    //     printf("%s\n", dentry->d_name);
+    //     }
+    //     closedir(d);
+    // }else{
+    //     perror("No se ha podido abrir el directorio: ");
+    //     return (EXIT_FAILURE);
+    // }
+    char txt[200] = "Hola capo todo bien\n";
+    strtok(txt, " ");
+    printf ("%s",txt);
     return 0;
 }
