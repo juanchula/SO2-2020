@@ -9,3 +9,9 @@ user ls
 user password <new_pass>
 file ls
 file down <nombre_de_la_imagen>
+
+
+instalar:
+sudo apt-get install libssl-dev
+
+gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o file file_service.c -lrt -lssl -lcrypto

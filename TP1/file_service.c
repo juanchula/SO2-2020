@@ -2,36 +2,42 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <openssl/md5.h>
 
 #define BUFF_SIZE 200
-#define BASE_DATO "./base-datos"
+#define DIRECTORY "./isos/"
 
 void calcmd5(char *iso, char *md5){
     bzero(md5, BUFF_SIZE);
-
+    char url[BUFF_SIZE] = DIRECTORY;
+    strcat(url, iso);
+    //printf("%s", url);
     //OTROS LINKS: https://stackoverflow.com/questions/1220046/how-to-get-the-md5-hash-of-a-file-in-c 
     //https://stackoverflow.com/questions/3395690/md5sum-of-file-in-linux-c
     //https://stackoverflow.com/questions/7627723/how-to-create-a-md5-hash-of-a-string-in-c
     //SACADO DE: https://stackoverflow.com/questions/10324611/how-to-calculate-the-md5-hash-of-a-large-file-in-c
-    // unsigned char c[MD5_DIGEST_LENGTH];
-    // char *filename="file.c";
-    // int i;
-    // FILE *inFile = fopen (filename, "rb");
-    // MD5_CTX mdContext;
-    // int bytes;
-    // unsigned char data[1024];
+    unsigned char c[MD5_DIGEST_LENGTH];
+    FILE *inFile = fopen (url, "rb");
+    MD5_CTX mdContext;
+    size_t bytes;
+    unsigned char data[BUFF_SIZE];
 
-    // if (inFile == NULL) {
-    //     printf ("%s can't be opened.\n", filename);
-    //     return 0;
-    // }
+    if (inFile == NULL) {
+        perror("No se ha podido abrir la isos: ");
+        exit (EXIT_FAILURE);
+    }
 
-    // MD5_Init (&mdContext);
-    // while ((bytes = fread (data, 1, 1024, inFile)) != 0)
-    //     MD5_Update (&mdContext, data, bytes);
-    // MD5_Final (c,&mdContext);
-    // for(i = 0; i < MD5_DIGEST_LENGTH; i++) printf("%02x", c[i])
+    MD5_Init (&mdContext);
+    while ((bytes = fread(data, 1, BUFF_SIZE, inFile))){
+        MD5_Update (&mdContext, data, bytes);
+    }
 
+    MD5_Final (c,&mdContext);
+    for(int i = 0; i < MD5_DIGEST_LENGTH; i++){
+        snprintf(md5, MD5_DIGEST_LENGTH*2, "%02x", c[i]);
+        // strcat(md5, c[i]);
+        printf("%02x", c[i]);
+    }
 }
 
 void lsfile(char *txt){
@@ -51,12 +57,15 @@ void lsfile(char *txt){
         closedir(d);
     }else{
         perror("No se ha podido abrir el directorio: ");
-        return (EXIT_FAILURE);
+        exit (EXIT_FAILURE);
     }
 }
 
 int main()
 {
-    /* code */
+    char md5[BUFF_SIZE] = "";
+    char file[BUFF_SIZE] = "generadorkey2";
+    calcmd5(file, md5);
+    printf ("%s\n", md5);
     return 0;
 }
