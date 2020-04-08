@@ -127,7 +127,6 @@ bool fileverification(char *filename, char *txt){
     bzero(txt, BUFF_SIZE);
     int long s;
     char size[BUFF_SIZE] = "";
-    char iso[BUFF_SIZE] = "";
     char md5[BUFF_SIZE] = "";
     char iso[BUFF_SIZE] = "";
     DIR *d = opendir("./isos");
@@ -171,12 +170,8 @@ int main(){
     char url[BUFF_SIZE] = "";
 
 
-    char msjserver[BUFF_SIZE]; 
-    char msjclient[BUFF_SIZE]; 
     int sfd;
     int fdc;
-    bool connected = false;
-    bool login = false;
 
     sfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sfd == -1) { 

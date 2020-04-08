@@ -72,12 +72,13 @@ int main()
         bzero(msjclient, MAX);
         int recibido = -1;
         FILE *image = fopen("./isoscopia/nada", "wb");
-        while((recibido = recv(sockfile, msjserver, MAX, 0)) > 0){
-            printf("%s",msjserver);
+        while((recibido = (int)recv(sockfile, msjserver, MAX, 0)) > 0){
+            printf("%s\n",msjserver);
             fwrite(msjserver,sizeof(char),1,image);
         }
         fclose(image);
-        transfer = false; 
+        transfer = false;
+    } 
   
     close(sockfd); 
 } 
