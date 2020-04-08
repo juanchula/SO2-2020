@@ -161,6 +161,7 @@ bool fileverification(char *filename, char *txt){
 int main(){
     bool transfer = false;
     int space;
+    char sent_file[1] = "";
     char argone[BUFF_SIZE] = "";
     char argtwo[BUFF_SIZE] = "";
     char argthree[BUFF_SIZE] = "";
@@ -264,15 +265,17 @@ int main(){
         }
 
         while(!feof(image)){
-            fread(sent_msg,sizeof(char),BUFF_SIZE,image);
-            if(send(fdc,sent_msg,BUFF_SIZE,0) == -1){
+            fread(sent_file,sizeof(char),1,image);
+            if(send(fdc,sent_file,1,0) == -1){
                 perror("Error al enviar el arvhivo:");
             }
         }
-        strcpy(sent_msg, "LISTORTI");
-        if(send(fdc,sent_msg,BUFF_SIZE,0) == -1){
-            perror("Error al enviar el arvhivo:");
-        }
+        bzero(sent_file, 1);
+        recv(fdc,sent_file,1,0);
+        // sent_file[0] = '|';
+        // if(send(fdc,sent_file,BUFF_SIZE,0) == -1){
+        //     perror("Error al enviar el mensaje:");
+        // }
         printf("Se termino la transferencia \n");
         bzero(argthree, BUFF_SIZE);
         bzero(filetransfer, BUFF_SIZE);

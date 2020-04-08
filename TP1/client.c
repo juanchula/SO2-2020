@@ -16,7 +16,8 @@ int main()
 {
     bool transfer = false;
     char msjserver[MAX]; 
-    char msjclient[MAX];  
+    char msjclient[MAX];
+    char rev_file[1] = "";  
     int sockfd;
     int sockfile; 
   
@@ -70,17 +71,23 @@ int main()
             exit(EXIT_FAILURE);
         }
         printf("CLIENTE: INCIANDO RECEPCION \n");
-        bzero(msjclient, MAX);
+        bzero(rev_file, 1);
         int recibido = -1;
-        FILE *image = fopen("./isoscopia/nada", "wb");
-        while((recibido = (int)recv(sockfile, msjclient, MAX, 0)) > 0){
-            if(strstr(msjclient, "LISTORTI") != NULL)
-                break;
+        FILE *image = fopen("./isoscopia/memtest86+-5.01.iso", "wb");
+        long int i= 0;
+        while((recibido = (int)recv(sockfile, rev_file, 1, 0)) > 0){
+            // if(rev_file[0] == '|')
+            //     break;
             //printf("%s",msjclient);
-            fwrite(msjclient,sizeof(char),1,image);
+            fwrite(rev_file,sizeof(char),1,image);
+            i++;
+            if(i == 1839104)
+                break;
         }
+        char ola[1] = "a";
+        send(sockfile, ola,1,0);
         fclose(image);
-        bzero(msjclient, MAX);
+        bzero(rev_file, MAX);
         transfer = false;
         printf("CLIENTE: FINALIZADO RECEPCION \n");
     } 
