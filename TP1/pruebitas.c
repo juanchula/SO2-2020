@@ -115,8 +115,38 @@ int main()
     //     perror("No se ha podido abrir el directorio: ");
     //     return (EXIT_FAILURE);
     // }
-    char txt[200] = "Hola capo todo bien\n";
-    strtok(txt, " ");
-    printf ("%s",txt);
+    // char a[200];
+    // char txt[200] = "Conectar puerto de transferencia. Datos de iso: memtest86+-5.01.iso   1839104B   0f3d162f0c2f42da1455993ac4df396b\n";
+    // double b;
+    // double c = 10;
+    // sscanf(txt, "%*s %*s %*s %*s %*s %*s %*s %*s %s", a);
+    // strtok(a, "B");
+    // b = strtod(a, NULL);
+    // for (int i = 0; i < c; i++)
+    // {
+    //     printf("%d", i);
+        
+    // }
+    // printf ("\n%f  %f",b, c);
+    char i[1] = "";
+    FILE *original = fopen("./isoscopia/memtest86+-5.01.iso", "rb");
+    FILE *copia = fopen("/dev/sdb1", "wb");
+    if(original == NULL){
+        perror("No se a podido abrir el archivo: ");
+        exit(EXIT_FAILURE);
+    }
+    if(copia == NULL){
+        perror("F: ");
+        exit(EXIT_FAILURE);
+    }
+
+    while(!feof(original)){
+        fread(i, sizeof(char), 1, original);
+        fwrite(i, sizeof(char), 1, copia);
+    }
+    fclose(original);
+    fclose(copia);
+    printf("good\n");
+    
     return 0;
 }

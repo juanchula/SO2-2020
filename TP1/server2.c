@@ -10,14 +10,14 @@
 #include <fcntl.h>
 #include <stdbool.h>
 
-#define MAX 200 
+#define BUFF_SIZE 200 
 #define PORT 4444
 #define QUEUEPATHAUTH "/auth_service"
 #define QUEUEPATHFILE "/file_service"
 
 int main(void){
-    char msjserver[MAX]; 
-    char msjclient[MAX]; 
+    char msjserver[BUFF_SIZE]; 
+    char msjclient[BUFF_SIZE]; 
     int sfd;
     int fdc;
     bool connected = false;
@@ -52,9 +52,9 @@ int main(void){
 
     struct mq_attr queue_atributes = {0};
     queue_atributes.mq_maxmsg  = 10 ;
-    queue_atributes.mq_msgsize = MAX ;
-    char sent_msg[MAX];
-    char recv_msg[MAX];
+    queue_atributes.mq_msgsize = BUFF_SIZE ;
+    char sent_msg[BUFF_SIZE];
+    char recv_msg[BUFF_SIZE];
     unsigned int prio = 1;
 
     /*Cola de mensajes entre servidor primario y servicio de autentificacion*/
@@ -79,22 +79,22 @@ int main(void){
 
     do{
         while(connected){
-            bzero(msjclient, MAX); 
-            recv(fdc,msjclient, MAX, 0);
+            bzero(msjclient, BUFF_SIZE); 
+            recv(fdc,msjclient, BUFF_SIZE, 0);
 
             if(strstr(msjclient, "exit") != NULL && (int) strlen(msjclient) == 5){      //Si recibo un exit    
                 login = false;
                 connected = false;
                 strcpy(sent_msg, "logout");
-                if (  mq_send(qda, sent_msg, MAX, (unsigned int) 1) == -1){
+                if (  mq_send(qda, sent_msg, BUFF_SIZE, (unsigned int) 1) == -1){
                 perror("Sending");
                 exit(EXIT_FAILURE);
                 }
-                if (mq_receive(qda, recv_msg, MAX, &prio) == -1 ){
+                if (mq_receive(qda, recv_msg, BUFF_SIZE, &prio) == -1 ){
                         perror("Receiving");
                         exit(EXIT_FAILURE);
                 }
-                bzero(recv_msg, MAX);
+                bzero(recv_msg, BUFF_SIZE);
                 break;
             }
 
@@ -102,26 +102,26 @@ int main(void){
             strtok(msjclient, " ");
             if(strstr(msjclient, "file")){                                          //Verifico para que servicio es el mensaje y si esta logueado
                 if(login){                                                          //Mensaje es para el servicio de archivos
-                    if (  mq_send(qdf, sent_msg, MAX, (unsigned int) 1) == -1){
+                    if (  mq_send(qdf, sent_msg, BUFF_SIZE, (unsigned int) 1) == -1){
                         perror("Sending");
                         exit(EXIT_FAILURE);
                     }
-                    bzero(sent_msg, MAX);
+                    bzero(sent_msg, BUFF_SIZE);
                     
-                    if (mq_receive(qdf, recv_msg, MAX, &prio) == -1 ){
+                    if (mq_receive(qdf, recv_msg, BUFF_SIZE, &prio) == -1 ){
                                 perror("Receiving");
                                 exit(EXIT_FAILURE);
                         }
                 }else
                     strcpy(recv_msg, "Comando incorrecto");
             }else{                                                                  //Mensaje es para el servicio de autentificacion
-                if (  mq_send(qda, sent_msg, MAX, (unsigned int) 1) == -1){
+                if (  mq_send(qda, sent_msg, BUFF_SIZE, (unsigned int) 1) == -1){
                     perror("Sending");
                     exit(EXIT_FAILURE);
                 }
-                bzero(sent_msg, MAX);
+                bzero(sent_msg, BUFF_SIZE);
                 
-                if (mq_receive(qda, recv_msg, MAX, &prio) == -1 ){
+                if (mq_receive(qda, recv_msg, BUFF_SIZE, &prio) == -1 ){
                             perror("Receiving");
                             exit(EXIT_FAILURE);
                     }
@@ -135,10 +135,10 @@ int main(void){
             }
             
             strcpy(msjserver, recv_msg);
-            bzero(recv_msg, MAX);
+            bzero(recv_msg, BUFF_SIZE);
 
-            send(fdc, msjserver, MAX, 0);
-            bzero(msjserver, MAX); 
+            send(fdc, msjserver, BUFF_SIZE, 0);
+            bzero(msjserver, BUFF_SIZE); 
         }
         fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
         lenght_client = (int32_t) sizeof (struct sockaddr_in);

@@ -7,17 +7,24 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define MAX 200 
+#define BUFF_SIZE 200
+#define BIT_SIZE 1
 #define PORTMSJ 4444
 #define PORTFILE 5555
+#define FOLDER "./isoscopia/"
 
 
 int main() 
 {
     bool transfer = false;
-    char msjserver[MAX]; 
-    char msjclient[MAX];
-    char rev_file[1] = "";  
+    char url[BUFF_SIZE];
+    char isoname[BUFF_SIZE];
+    char msjserver[BUFF_SIZE] = ""; 
+    char msjclient[BUFF_SIZE] = ""; 
+    char rev_file[BIT_SIZE] = "";
+    char bitchar[BUFF_SIZE] = ""; 
+    long double bitdouble;
+    int i = 0;
     int sockfd;
     int sockfile; 
   
@@ -55,41 +62,49 @@ int main()
     } 
     while(1){
         do{
-            fgets( msjserver, MAX-1, stdin );
-            send(sockfd, msjserver, MAX, 0);
-            bzero(msjserver, MAX); 
-
-            recv(sockfd,msjclient, MAX, 0);
-            printf("%s\n", msjclient);
-            if(strstr(msjclient, "Conectar puerto de transferencia.") != NULL){
-                transfer = true;
-            }
             bzero(msjclient, sizeof(msjclient)); 
+            bzero(msjserver, sizeof(msjserver)); 
+            fgets(msjclient, BUFF_SIZE-1, stdin );
+            send(sockfd, msjclient, BUFF_SIZE, 0);
+
+            recv(sockfd,msjserver, BUFF_SIZE, 0);
+            printf("%s\n", msjserver);
+            if(strstr(msjserver, "Conectar puerto de transferencia.") != NULL){
+                transfer = true;
+            } 
         }while(!transfer);
+
         if (connect(sockfile, (struct sockaddr *)  servaddrfile, sizeof (struct sockaddr)) != 0) { 
             perror("connection with the server failed...\n"); 
             exit(EXIT_FAILURE);
         }
         printf("CLIENTE: INCIANDO RECEPCION \n");
-        bzero(rev_file, 1);
+        bzero(rev_file, BIT_SIZE);
+        bzero(isoname, BUFF_SIZE);
+        bzero(url, BUFF_SIZE);
         int recibido = -1;
-        FILE *image = fopen("./isoscopia/memtest86+-5.01.iso", "wb");
-        long int i= 0;
-        while((recibido = (int)recv(sockfile, rev_file, 1, 0)) > 0){
-            // if(rev_file[0] == '|')
-            //     break;
-            //printf("%s",msjclient);
-            fwrite(rev_file,sizeof(char),1,image);
+        sscanf(msjserver, "%*s %*s %*s %*s %*s %*s %*s %*s %s", bitchar);
+        strtok(bitchar, "B");
+        sscanf(msjclient, "%*s %*s %s", isoname);
+        strcpy(url, FOLDER);
+        strcat(url, isoname);
+        printf("%s\n", url);
+        bitdouble = strtod(bitchar, NULL);
+
+        FILE *image = fopen(url, "wb");
+        i = 0;
+        while((recibido = (int)recv(sockfile, rev_file, BIT_SIZE, 0)) > 0){
+            fwrite(rev_file,sizeof(char),BIT_SIZE,image);
             i++;
-            if(i == 1839104)
+            if(i == bitdouble)
                 break;
         }
-        char ola[1] = "a";
-        send(sockfile, ola,1,0);
+        send(sockfile, "a", BIT_SIZE, 0);
         fclose(image);
-        bzero(rev_file, MAX);
+        bzero(rev_file, BUFF_SIZE);
         transfer = false;
         printf("CLIENTE: FINALIZADO RECEPCION \n");
+        close(sockfile);
     } 
   
     close(sockfd); 
