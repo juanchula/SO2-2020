@@ -18,16 +18,16 @@ ls /dev/mqueue
 
 ->Compilacion:
 Cliente:
-gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o cliente  client.c -lrt -lssl -lcrypto && ./cliente
+gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o cliente.out  client.c -lrt -lssl -lcrypto && ./cliente.out
 
 Servidor principal:
-gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o servidor  server2.c -lrt && ./servidor
+gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o servidor.out  server2.c -lrt && ./servidor.out
 
 Servicio de auth:
-gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o au auth-service.c -lrt && ./au
+gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o au.out auth-service.c -lrt && ./au.out
 
 Servicio de archivo:
-gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o file file_service.c -lrt -lssl -lcrypto && ./file
+gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o file.out file_service.c -lrt -lssl -lcrypto && ./file.out
 
 pruebita:
-gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o pruebitas pruebitas.c && ./pruebitas
+gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o pruebitas.out pruebitas.c && ./pruebitas.out

@@ -7,12 +7,21 @@
 #include <string.h>
 #include <stdbool.h>
 #include <openssl/md5.h>
+#include <signal.h>
 
 #define BUFF_SIZE 200
 #define BIT_SIZE 1
 #define PORTMSJ 4444
 #define PORTFILE 5555
 #define FOLDER "./isoscopia/"
+
+int fdsocket;
+
+void controlc(){
+    char msjclient[BUFF_SIZE] ="exit\n";
+    send(fdsocket, msjclient, BUFF_SIZE, 0);
+    exit(0);
+}
 
 void calcmd5(char *iso, char *md5){
     bzero(md5, BUFF_SIZE);
@@ -64,14 +73,24 @@ int main()
     int i = 0;
     int sockfd;
     int sockfile; 
-  
+
+    struct sigaction sa;
+    sa.sa_handler = controlc;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    
+    if(sigaction(SIGINT, &sa, NULL) == -1){
+        perror("Error signaction: ");
+        exit(EXIT_FAILURE);
+    }
+
     // socket create and varification 
     sockfd = socket(AF_INET, SOCK_STREAM, 0); 
     if (sockfd == -1) { 
         perror("socket creation failed...\n"); 
         exit(EXIT_FAILURE); 
     }
-  
+    fdsocket = sockfd;
     // create and assign IP, PORT 
     struct sockaddr_in * servaddrmsj = calloc(1, sizeof (struct sockaddr_in));
     servaddrmsj->sin_family = AF_INET;
@@ -145,9 +164,9 @@ int main()
         transfer = false;
         calcmd5(isoname, md5local);
         if(strstr(md5local, md5original) != NULL){
-            printf("CLIENTE: FINALIZADA RECEPCION CON EXITO. MD5:%S\n Iniciando transferencial usb", md5local);
+            printf("CLIENTE: FINALIZADA RECEPCION CON EXITO. MD5:%s\n Iniciando transferencial usb", md5local);
         }else{
-             printf("CLIENTE: FINALIZADA RECEPCION CON ERROR. MD5:%S\n No se grabara en el usb", md5local);
+             printf("CLIENTE: FINALIZADA RECEPCION CON ERROR. MD5:%s\n No se grabara en el usb", md5local);
         }
         close(sockfile);
     }

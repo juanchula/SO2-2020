@@ -82,7 +82,7 @@ int main(void){
             bzero(msjclient, BUFF_SIZE); 
             recv(fdc,msjclient, BUFF_SIZE, 0);
 
-            if(strstr(msjclient, "exit") != NULL && (int) strlen(msjclient) == 5){      //Si recibo un exit    
+            if(strstr(msjclient, "exit") != NULL && (int) strlen(msjclient) == 5){      //Si recibo un exit   
                 login = false;
                 connected = false;
                 strcpy(sent_msg, "logout");

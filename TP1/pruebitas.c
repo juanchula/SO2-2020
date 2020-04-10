@@ -23,6 +23,37 @@ void resetchar( char * txt){
     strcat(txt, "\n");
 }
 
+int getVal(char c)
+   {
+       int rtVal = 0;
+
+       if(c >= '0' && c <= '9')
+       {
+           rtVal = c - '0';
+       }
+       else
+       {
+           rtVal = c - 'a' + 10;
+       }
+
+       return rtVal;
+   }
+
+
+int ascii_to_hex(char c)
+{
+        int num = (int) c;
+        if(num < 58 && num > 47)
+        {
+                return num - 48; 
+        }
+        if(num < 103 && num > 96)
+        {
+                return num - 87;
+        }
+        return num;
+}
+
 int main()
 {
     // int line = 5;
@@ -128,25 +159,75 @@ int main()
         
     // }
     // printf ("\n%f  %f",b, c);
-    char i[1] = "";
-    FILE *original = fopen("./isoscopia/memtest86+-5.01.iso", "rb");
-    FILE *copia = fopen("/dev/sdb1", "wb");
-    if(original == NULL){
-        perror("No se a podido abrir el archivo: ");
-        exit(EXIT_FAILURE);
-    }
-    if(copia == NULL){
-        perror("F: ");
-        exit(EXIT_FAILURE);
-    }
+    // char i[1] = "";
+    // FILE *original = fopen("./isoscopia/memtest86+-5.01.iso", "rb");
+    // FILE *copia = fopen("/dev/sdb1", "wb");
+    // if(original == NULL){
+    //     perror("No se a podido abrir el archivo: ");
+    //     exit(EXIT_FAILURE);
+    // }
+    // if(copia == NULL){
+    //     perror("F: ");
+    //     exit(EXIT_FAILURE);
+    // }
 
-    while(!feof(original)){
-        fread(i, sizeof(char), 1, original);
-        fwrite(i, sizeof(char), 1, copia);
-    }
-    fclose(original);
-    fclose(copia);
-    printf("good\n");
+    // while(!feof(original)){
+    //     fread(i, sizeof(char), 1, original);
+    //     fwrite(i, sizeof(char), 1, copia);
+    // }
+    // fclose(original);
+    // fclose(copia);
+    // printf("good\n");
     
-    return 0;
+
+
+    // FILE *fp = fopen("./isos/ejemplo.iso", "rb");
+    // unsigned char temp[1000];
+    // fread(temp, sizeof(temp), 1, fp);
+    // for (size_t i = 0; i < 1000; i++)
+    // {
+    //     printf("%u\n", temp[i]);
+    // }
+    
+    // printf("%u\n", temp[2]);
+
+
+    unsigned char key[510];
+    FILE *secretkey;
+    secretkey = fopen("./isos/ejemplo.iso", "rb");
+    fread(key, 1, sizeof key, secretkey);
+    for(size_t j = 0; j < (sizeof(key)) ; j++) {
+        if(j>=446){
+            printf("%02x ", key[j]);
+        }
+        if(j==461 || j==477 || j==493){
+            printf("\n");
+        }
+    }
+    //printf("%u", key[498]);
+
+
+
+        //printf("%0X%02x ", key[j]);
+
+    // unsigned char c;
+    // while (!feof(secretkey)) {
+    //   c = fgetc(secretkey);
+    //   printf("\n%02x", c);
+    // }
+    // printf("\nEnd of file\n");
+
+
+    // unsigned char c1,c2;
+    //     int i=0;
+    //     unsigned char sum,final_hex[15/2];
+    //     for(i=0;i<15/2;i++)
+    //     {
+    //             c1 = ascii_to_hex((char)(fgetc(secretkey)));
+    //             c2 = ascii_to_hex((char)(fgetc(secretkey)));
+    //             sum = c1<<4 | c2;
+    //             final_hex[i] = sum;
+    //             printf("%02x ",sum);
+    //     }
+    //     printf("\n");
 }
