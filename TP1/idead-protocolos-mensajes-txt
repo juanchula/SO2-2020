@@ -14,11 +14,11 @@ file down <nombre_de_la_imagen>
 instalar:
 sudo apt-get install libssl-dev
 
-
+ls /dev/mqueue
 
 ->Compilacion:
 Cliente:
-gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o cliente  client.c && ./cliente
+gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o cliente  client.c -lrt -lssl -lcrypto && ./cliente
 
 Servidor principal:
 gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o servidor  server2.c -lrt && ./servidor

@@ -37,7 +37,6 @@ void calcmd5(char *iso, char *md5){
     char aux[2] = "";
     char url[BUFF_SIZE] = DIRECTORY;
     strcat(url, iso);
-    //printf("%s", url);
     //OTROS LINKS: https://stackoverflow.com/questions/1220046/how-to-get-the-md5-hash-of-a-file-in-c 
     //https://stackoverflow.com/questions/3395690/md5sum-of-file-in-linux-c
     //https://stackoverflow.com/questions/7627723/how-to-create-a-md5-hash-of-a-string-in-c
