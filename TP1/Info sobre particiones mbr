@@ -13,3 +13,9 @@ Recordar que se lee al revez (Primeros numeros son los de menos importante) (bit
 osea 0001 -> 1000
 calculo en enteros int(0x1000)
 tamaño de sector es 512b? 2048b? idk
+
+
+CREAR ISO:
+dd if=/dev/zero of=ejemplo.iso bs=512 count=6144
+
+//bs tamaño del sector, count= cantidad de sectores ejemplo
