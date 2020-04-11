@@ -14,8 +14,32 @@
 #define PORTMSJ 4444
 #define PORTFILE 5555
 #define FOLDER "./isoscopia/"
+#define PCTERMINAL "juanfernandez@Juan-Lenovo ->"
 
 int fdsocket;
+
+void partitiontable(char * isoname){
+    char url[BUFF_SIZE];
+    strcpy(url, FOLDER);
+    strcat(url, isoname);
+    unsigned char hex[510]; 
+    FILE *image = fopen(url, "rb");
+    if(image == NULL){
+            perror("No se a podido abrir el archivo: ");
+            exit(EXIT_FAILURE);
+        }
+
+    fread(hex, 1, sizeof hex, image);
+    for(size_t j = 0; j < (sizeof(hex)) ; j++) {
+        if(j>=446){
+            printf("%02x ", hex[j]);
+        }
+        if(j==461 || j==477 || j==493){
+            printf("\n");
+        }
+    }
+    fclose(image);
+}
 
 void controlc(){
     char msjclient[BUFF_SIZE] ="exit\n";
@@ -57,20 +81,62 @@ void calcmd5(char *iso, char *md5){
     fclose(inFile);
 }
 
+void receivefile(char* msjserver, char *msjclient, int sockfile){
+    char buffer[BUFF_SIZE];
+    ssize_t receivedbyte;
+    double missingbytes;
+    char filesize[BUFF_SIZE];
+    char originalmd5[BUFF_SIZE];
+    char localmd5[BUFF_SIZE];
+    char url[BUFF_SIZE];
+    char isoname[BUFF_SIZE];
+
+
+    sscanf(msjserver, "%*s %*s %*s %*s %*s %*s %*s %*s %s %s", filesize, originalmd5);
+    sscanf(msjclient, "%*s %*s %s", isoname);
+    strtok(filesize, "B");
+    strcpy(url, FOLDER);
+    strcat(url, isoname);
+
+    missingbytes = atoi(filesize);
+
+    FILE *image = fopen(url, "wb");
+    if(image == NULL){
+        perror("No se a podido abrir el archivo: ");
+        exit(EXIT_FAILURE);
+    }
+
+    while (((receivedbyte = recv(sockfile, buffer, BUFF_SIZE, 0)) > 0) && (missingbytes > 0)){
+        fwrite(buffer, sizeof(char), (size_t) receivedbyte, image);
+        missingbytes -= (int) receivedbyte;
+    }
+    fclose(image);
+
+    calcmd5(isoname, localmd5);
+    if(strstr(localmd5, originalmd5) != NULL){
+        printf("CLIENTE: FINALIZADA RECEPCION CON EXITO. MD5:%s\n Tabla de particion:\n", localmd5);
+        partitiontable(isoname);
+        
+    }else{
+            printf("CLIENTE: FINALIZADA RECEPCION CON ERROR. MD5:%s\n No se grabara en el usb", localmd5);
+    }
+    close(sockfile);
+}
+
 
 int main() 
 {
     bool transfer = false;
-    char url[BUFF_SIZE];
-    char isoname[BUFF_SIZE];
+    // char url[BUFF_SIZE];
+    // char isoname[BUFF_SIZE];
     char msjserver[BUFF_SIZE] = ""; 
     char msjclient[BUFF_SIZE] = ""; 
-    char rev_file[BIT_SIZE] = "";
-    char bitchar[BUFF_SIZE] = "";
-    char md5original[BUFF_SIZE] = ""; 
-    char md5local[BUFF_SIZE] = "";
-    long double bitdouble;
-    int i = 0;
+    // char rev_file[BIT_SIZE] = "";
+    // char bitchar[BUFF_SIZE] = "";
+    // char md5original[BUFF_SIZE] = ""; 
+    // char md5local[BUFF_SIZE] = "";
+    // long double bitdouble;
+    // int i = 0;
     int sockfd;
     int sockfile; 
 
@@ -120,6 +186,7 @@ int main()
         do{
             bzero(msjclient, sizeof(msjclient)); 
             bzero(msjserver, sizeof(msjserver)); 
+            printf("%s", PCTERMINAL);
             fgets(msjclient, BUFF_SIZE-1, stdin );
             send(sockfd, msjclient, BUFF_SIZE, 0);
 
@@ -134,41 +201,52 @@ int main()
             perror("connection with the server failed...\n"); 
             exit(EXIT_FAILURE);
         }
-        printf("CLIENTE: INCIANDO RECEPCION \n");
-        bzero(rev_file, BIT_SIZE);
-        bzero(isoname, BUFF_SIZE);
-        bzero(url, BUFF_SIZE);
-        bzero(md5original, BUFF_SIZE);
-        bzero(md5local, BUFF_SIZE);
-        int recibido = -1;
-        sscanf(msjserver, "%*s %*s %*s %*s %*s %*s %*s %*s %s %s", bitchar, md5original);
-        strtok(md5original, "\n");
-        strtok(bitchar, "B");
-        sscanf(msjclient, "%*s %*s %s", isoname);
-        strcpy(url, FOLDER);
-        strcat(url, isoname);
-        printf("%s\n", url);
-        bitdouble = strtod(bitchar, NULL);
 
-        FILE *image = fopen(url, "wb");
-        i = 0;
-        while((recibido = (int)recv(sockfile, rev_file, BIT_SIZE, 0)) > 0){
-            fwrite(rev_file,sizeof(char),BIT_SIZE,image);
-            i++;
-            if(i == bitdouble)
-                break;
-        }
-        send(sockfile, "a", BIT_SIZE, 0);
-        fclose(image);
-        bzero(rev_file, BUFF_SIZE);
+        printf("CLIENTE: INCIANDO RECEPCION \n");
+        receivefile(msjserver, msjclient, sockfile);
         transfer = false;
-        calcmd5(isoname, md5local);
-        if(strstr(md5local, md5original) != NULL){
-            printf("CLIENTE: FINALIZADA RECEPCION CON EXITO. MD5:%s\n Iniciando transferencial usb", md5local);
-        }else{
-             printf("CLIENTE: FINALIZADA RECEPCION CON ERROR. MD5:%s\n No se grabara en el usb", md5local);
-        }
-        close(sockfile);
+        // bzero(rev_file, BIT_SIZE);
+        // bzero(isoname, BUFF_SIZE);
+        // bzero(url, BUFF_SIZE);
+        // bzero(md5original, BUFF_SIZE);
+        // bzero(md5local, BUFF_SIZE);
+        // int recibido = -1;
+        // sscanf(msjserver, "%*s %*s %*s %*s %*s %*s %*s %*s %s %s", bitchar, md5original);
+        // strtok(md5original, "\n");
+        // strtok(bitchar, "B");
+        // sscanf(msjclient, "%*s %*s %s", isoname);
+        // strcpy(url, FOLDER);
+        // strcat(url, isoname);
+        // printf("%s\n", url);
+        // bitdouble = strtod(bitchar, NULL);
+
+        // FILE *image = fopen(url, "wb");
+        // if(image == NULL){
+        //     perror("No se a podido abrir el archivo: ");
+        //     exit(EXIT_FAILURE);
+        // }
+
+        // i = 0;
+        // while((recibido = (int)recv(sockfile, rev_file, BIT_SIZE, 0)) > 0){
+        //     fwrite(rev_file,sizeof(char),BIT_SIZE,image);
+        //     i++;
+        //     if(i == bitdouble)
+        //         break;
+        // }
+        // send(sockfile, "a", BIT_SIZE, 0);
+        // fclose(image);
+        // bzero(rev_file, BUFF_SIZE);
+        // transfer = false;
+        // calcmd5(isoname, md5local);
+        // if(strstr(md5local, md5original) != NULL){
+        //     printf("CLIENTE: FINALIZADA RECEPCION CON EXITO. MD5:%s\n Tabla de particion:\n", md5local);
+        //     partitiontable(isoname);
+            
+        // }else{
+        //      printf("CLIENTE: FINALIZADA RECEPCION CON ERROR. MD5:%s\n No se grabara en el usb", md5local);
+        // }
+        // close(sockfile);
+    
     }
     close(sockfd); 
 } 

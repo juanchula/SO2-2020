@@ -16,6 +16,26 @@ tamaño de sector es 512b? 2048b? idk
 
 
 CREAR ISO:
-dd if=/dev/zero of=ejemplo.iso bs=512 count=6144
-
+dd if=/dev/zero of=ejemplo.iso bs=512 count=16384
 //bs tamaño del sector, count= cantidad de sectores ejemplo
+
+hexdump ejemplo.iso
+fdisk ejemplo.iso
+
+o  //crea la tabla de particiones
+p //imprime la tabla
+
+
+//repetimos:
+n
+p
+enter //numero (1-4)
+enter
++2M //2 megas
+
+w //escribe el archivo
+fdisk ejemplo.iso
+p //imprime la tabla
+q //salir
+
+sudo dd if=ejemplo.iso bs=510 count=1 | tail -c 64 | hexdump -C

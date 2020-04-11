@@ -7,6 +7,9 @@
 #include <mqueue.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/sendfile.h>
 
 #define QUEUEPATH "/file_service"
 #define BUFF_SIZE 200
@@ -157,17 +160,49 @@ bool fileverification(char *filename, char *txt){
     return false;
 }
 
+void sendiso(char * argthree, int fdc, char *filetransfer){
+    char url[BUFF_SIZE];
+    char size[BUFF_SIZE];
+    off_t offset = 0;
+    double missingbytes;
+    ssize_t sentbyte;
+    int image;
+
+    sscanf(filetransfer, "%*s %s", size);
+    strtok(size, "B");
+    missingbytes = atoi(size);
+
+    strcpy(url, DIRECTORY);
+    strcat(url, argthree);
+
+    // FILE *image = fopen(url, "rb");
+    // if (image == NULL) {
+    //     perror("No se ha podido abrir la isos: ");
+    //     exit (EXIT_FAILURE);
+    // }
+    image = open(url, O_RDONLY);
+    if (image == -1){
+        perror("No se ha podido abrir la isos: ");
+        exit(EXIT_FAILURE);
+    }
+
+   while (((sentbyte = sendfile(fdc, image, &offset, BUFF_SIZE)) > 0) && (missingbytes > 0)){
+       missingbytes -= (int) sentbyte;
+   }
+   close(image);
+}
+
 int main(){
     bool transfer = false;
     int space;
-    char sent_file[1] = "";
+    // char sent_file[1] = "";
     char argone[BUFF_SIZE] = "";
     char argtwo[BUFF_SIZE] = "";
     char argthree[BUFF_SIZE] = "";
     char sent_msg[BUFF_SIZE] = "";
     char recv_msg[BUFF_SIZE] = "";
     char filetransfer[BUFF_SIZE] = "";
-    char url[BUFF_SIZE] = "";
+    // char url[BUFF_SIZE] = "";
 
 
     int sfd;
@@ -253,24 +288,31 @@ int main(){
         }while(!transfer);
         fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
         lenght_client = (int32_t) sizeof (struct sockaddr_in);
-        bzero(url, BUFF_SIZE);
-        strcpy(url, DIRECTORY);
-        strcat(url, argthree);
 
-        FILE *image = fopen(url, "rb");
-        if (image == NULL) {
-            perror("No se ha podido abrir la isos: ");
-            exit (EXIT_FAILURE);
-        }
 
-        while(!feof(image)){
-            fread(sent_file,sizeof(char),1,image);
-            if(send(fdc,sent_file,1,0) == -1){
-                perror("Error al enviar el arvhivo:");
-            }
-        }
-        bzero(sent_file, 1);
-        recv(fdc,sent_file,1,0);
+        sendiso(argthree, fdc, filetransfer);
+
+        // bzero(url, BUFF_SIZE);
+        // strcpy(url, DIRECTORY);
+        // strcat(url, argthree);
+
+        // FILE *image = fopen(url, "rb");
+        // if (image == NULL) {
+        //     perror("No se ha podido abrir la isos: ");
+        //     exit (EXIT_FAILURE);
+        // }
+
+        // while(!feof(image)){
+        //     fread(sent_file,sizeof(char),1,image);
+        //     if(send(fdc,sent_file,1,0) == -1){
+        //         perror("Error al enviar el arvhivo:");
+        //     }
+        // }
+        // bzero(sent_file, 1);
+        // recv(fdc,sent_file,1,0);
+
+
+
         // sent_file[0] = '|';
         // if(send(fdc,sent_file,BUFF_SIZE,0) == -1){
         //     perror("Error al enviar el mensaje:");
@@ -280,6 +322,7 @@ int main(){
         bzero(filetransfer, BUFF_SIZE);
         bzero(sent_msg, BUFF_SIZE);
         transfer = false;
+        close(fdc);
     }
 
 

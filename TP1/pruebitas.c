@@ -194,6 +194,7 @@ int main()
 
     unsigned char key[510];
     FILE *secretkey;
+    char prueba[2];
     secretkey = fopen("./isos/ejemplo.iso", "rb");
     fread(key, 1, sizeof key, secretkey);
     for(size_t j = 0; j < (sizeof(key)) ; j++) {
@@ -204,6 +205,7 @@ int main()
             printf("\n");
         }
     }
+    sscanf(key, "%02x", prueba[0], prueba[1]);
     //printf("%u", key[498]);
 
 
