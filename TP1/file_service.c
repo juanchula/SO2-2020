@@ -35,15 +35,12 @@ bool comparetxt(int length, char *txt, char *searchtxt){
     }
 }
 
+    //SACADO DE: https://stackoverflow.com/questions/10324611/how-to-calculate-the-md5-hash-of-a-large-file-in-c
 void calcmd5(char *iso, char *md5){
     bzero(md5, BUFF_SIZE);
     char aux[2] = "";
     char url[BUFF_SIZE] = DIRECTORY;
     strcat(url, iso);
-    //OTROS LINKS: https://stackoverflow.com/questions/1220046/how-to-get-the-md5-hash-of-a-file-in-c 
-    //https://stackoverflow.com/questions/3395690/md5sum-of-file-in-linux-c
-    //https://stackoverflow.com/questions/7627723/how-to-create-a-md5-hash-of-a-string-in-c
-    //SACADO DE: https://stackoverflow.com/questions/10324611/how-to-calculate-the-md5-hash-of-a-large-file-in-c
     unsigned char c[MD5_DIGEST_LENGTH];
     FILE *inFile = fopen (url, "rb");
     MD5_CTX mdContext;
@@ -62,9 +59,8 @@ void calcmd5(char *iso, char *md5){
 
     MD5_Final (c,&mdContext);
     for(int i = 0; i < MD5_DIGEST_LENGTH; i++){
-        snprintf(aux, (MD5_DIGEST_LENGTH*2), "%02x", c[i]); //Importante el x2
+        snprintf(aux, (MD5_DIGEST_LENGTH*2), "%02x", c[i]);
         strcat(md5, aux);
-        //printf("%02x", c[i]);
     }
     fclose(inFile);
 }
@@ -280,12 +276,9 @@ int main(){
         }while(!transfer);
         fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
         lenght_client = (int32_t) sizeof (struct sockaddr_in);
-
         sendiso(argthree, fdc, filetransfer);
-        printf("Se termino la transferencia \n");
         bzero(argthree, BUFF_SIZE);
         bzero(filetransfer, BUFF_SIZE);
-        bzero(sent_msg, BUFF_SIZE);
         transfer = false;
         close(fdc);
     }

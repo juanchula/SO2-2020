@@ -110,10 +110,14 @@ int burniso(char *usb, char *iso){
     FILE *copia = fopen(urlusb, "wb");
     if(original == NULL){
         perror("No se ha podido abrir el archivo: ");
+        fclose(original);
+        fclose(copia);
         return 0;
     }
     if(copia == NULL){
         perror("No se ha podido acceder al usb: ");
+        fclose(original);
+        fclose(copia);
         return 0;
     }
 

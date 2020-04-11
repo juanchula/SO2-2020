@@ -46,9 +46,7 @@ int main(void){
         perror("Error en listen: ");
         exit(EXIT_FAILURE);
     }
-
-
-
+    
 
     struct mq_attr queue_atributes = {0};
     queue_atributes.mq_maxmsg  = 10 ;
