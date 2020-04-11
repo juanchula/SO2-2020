@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <stdbool.h>
 
-#define BUFF_SIZE 200 
+#define BUFF_SIZE 1024 
 #define PORT 4444
 #define QUEUEPATHAUTH "/auth_service"
 #define QUEUEPATHFILE "/file_service"

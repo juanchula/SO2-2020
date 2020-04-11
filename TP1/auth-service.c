@@ -5,7 +5,7 @@
 #include <time.h>
 #include <mqueue.h>
 
-#define BUFF_SIZE 200
+#define BUFF_SIZE 1024
 #define BASE_DATO "./base-datos.txt"
 #define BASE_DATO2 "./base-datos2.txt"
 #define QUEUEPATH "/auth_service"

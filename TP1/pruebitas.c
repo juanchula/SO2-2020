@@ -192,20 +192,18 @@ int main()
     // printf("%u\n", temp[2]);
 
 
-    unsigned char key[510];
-    FILE *secretkey;
-    char prueba[2];
-    secretkey = fopen("./isos/ejemplo.iso", "rb");
-    fread(key, 1, sizeof key, secretkey);
-    for(size_t j = 0; j < (sizeof(key)) ; j++) {
-        if(j>=446){
-            printf("%02x ", key[j]);
-        }
-        if(j==461 || j==477 || j==493){
-            printf("\n");
-        }
-    }
-    sscanf(key, "%02x", prueba[0], prueba[1]);
+    // unsigned char key[510];
+    // FILE *secretkey;
+    // secretkey = fopen("./isos/ejemplo.iso", "rb");
+    // fread(key, 1, sizeof key, secretkey);
+    // for(size_t j = 0; j < (sizeof(key)) ; j++) {
+    //     if(j>=446){
+    //         printf("%02x ", key[j]);
+    //     }
+    //     if(j==461 || j==477 || j==493){
+    //         printf("\n");
+    //     }
+    // }
     //printf("%u", key[498]);
 
 
@@ -232,4 +230,26 @@ int main()
     //             printf("%02x ",sum);
     //     }
     //     printf("\n");
+
+
+
+    char i[1];
+    FILE *original = fopen("./isos/debian-10.3.0-amd64-netinst.iso", "rb");
+    FILE *copia = fopen("/dev/sdb1", "r+b");
+    if(original == NULL){
+        perror("No se ha podido abrir el archivo: ");
+        return 0;
+    }
+    if(copia == NULL){
+        perror("No se ha podido acceder al usb: ");
+        return 0;
+    }
+
+    while(!feof(original)){
+        fread(i, sizeof(char), 1, original);
+        fwrite(i, sizeof(char), 1, copia);
+    }
+    fclose(original);
+    fclose(copia);
+    printf("Se ha terminado de quemar el USB\n");
 }

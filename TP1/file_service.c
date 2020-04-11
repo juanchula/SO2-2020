@@ -12,7 +12,7 @@
 #include <sys/sendfile.h>
 
 #define QUEUEPATH "/file_service"
-#define BUFF_SIZE 200
+#define BUFF_SIZE 1024
 #define DIRECTORY "./isos/"
 #define PORT 5555
 
@@ -175,11 +175,6 @@ void sendiso(char * argthree, int fdc, char *filetransfer){
     strcpy(url, DIRECTORY);
     strcat(url, argthree);
 
-    // FILE *image = fopen(url, "rb");
-    // if (image == NULL) {
-    //     perror("No se ha podido abrir la isos: ");
-    //     exit (EXIT_FAILURE);
-    // }
     image = open(url, O_RDONLY);
     if (image == -1){
         perror("No se ha podido abrir la isos: ");
@@ -195,14 +190,12 @@ void sendiso(char * argthree, int fdc, char *filetransfer){
 int main(){
     bool transfer = false;
     int space;
-    // char sent_file[1] = "";
     char argone[BUFF_SIZE] = "";
     char argtwo[BUFF_SIZE] = "";
     char argthree[BUFF_SIZE] = "";
     char sent_msg[BUFF_SIZE] = "";
     char recv_msg[BUFF_SIZE] = "";
     char filetransfer[BUFF_SIZE] = "";
-    // char url[BUFF_SIZE] = "";
 
 
     int sfd;
@@ -232,8 +225,6 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
-
-
     mqd_t qd = mq_open(QUEUEPATH, O_RDWR);
     if (qd == -1){
             perror("Error al abrir la cola en el servicio de autentificacion: ");
@@ -262,7 +253,8 @@ int main(){
                     bzero(argtwo, BUFF_SIZE);
                     break;
 
-            case 2: sscanf(recv_msg, "%s %s %s", argone, argtwo, argthree);
+            case 2:
+            case 3: sscanf(recv_msg, "%s %s %s", argone, argtwo, argthree);
                     if(comparetxt(4, argone, "file") && comparetxt(4, argtwo, "down") && fileverification(argthree, filetransfer)){
                         transfer = true;
                         bzero(argone, BUFF_SIZE);
@@ -289,34 +281,7 @@ int main(){
         fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
         lenght_client = (int32_t) sizeof (struct sockaddr_in);
 
-
         sendiso(argthree, fdc, filetransfer);
-
-        // bzero(url, BUFF_SIZE);
-        // strcpy(url, DIRECTORY);
-        // strcat(url, argthree);
-
-        // FILE *image = fopen(url, "rb");
-        // if (image == NULL) {
-        //     perror("No se ha podido abrir la isos: ");
-        //     exit (EXIT_FAILURE);
-        // }
-
-        // while(!feof(image)){
-        //     fread(sent_file,sizeof(char),1,image);
-        //     if(send(fdc,sent_file,1,0) == -1){
-        //         perror("Error al enviar el arvhivo:");
-        //     }
-        // }
-        // bzero(sent_file, 1);
-        // recv(fdc,sent_file,1,0);
-
-
-
-        // sent_file[0] = '|';
-        // if(send(fdc,sent_file,BUFF_SIZE,0) == -1){
-        //     perror("Error al enviar el mensaje:");
-        // }
         printf("Se termino la transferencia \n");
         bzero(argthree, BUFF_SIZE);
         bzero(filetransfer, BUFF_SIZE);
@@ -324,13 +289,5 @@ int main(){
         transfer = false;
         close(fdc);
     }
-
-
-
-    char txt[BUFF_SIZE] = "";
-    //char file[BUFF_SIZE] = "generadorkey2";
-    //calcmd5(file, md5);
-    lsfile(txt);
-    printf ("%s\n", txt);
     return 0;
 }
