@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "auth.h": "c",
+        "stdbool.h": "c",
+        "time.h": "c",
+        "unistd.h": "c"
+    }
+}
