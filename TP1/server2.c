@@ -15,12 +15,25 @@
 #define QUEUEPATHAUTH "/auth_service"
 #define QUEUEPATHFILE "/file_service"
 
-int main(void){
+void sentrevcposix(int qd, char *sent_msg, char *recv_msg){
+    unsigned int prio = 1;
+    bzero(recv_msg, BUFF_SIZE);
+    if ( mq_send(qd, sent_msg, BUFF_SIZE, (unsigned int) 1) == -1){
+        perror("Sending");
+        exit(EXIT_FAILURE);
+    }
+    if (mq_receive(qd, recv_msg, BUFF_SIZE, &prio) == -1 ){
+        perror("Receiving");
+        exit(EXIT_FAILURE);
+    }
+    bzero(sent_msg, BUFF_SIZE);
+}
+
+int main(){
     char msjserver[BUFF_SIZE]; 
     char msjclient[BUFF_SIZE]; 
     int sfd;
-    int fdc;
-    bool connected = false;
+    int fdc = -1;
     bool login = false;
 
     sfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -46,14 +59,12 @@ int main(void){
         perror("Error en listen: ");
         exit(EXIT_FAILURE);
     }
-    
 
     struct mq_attr queue_atributes = {0};
     queue_atributes.mq_maxmsg  = 10 ;
     queue_atributes.mq_msgsize = BUFF_SIZE ;
     char sent_msg[BUFF_SIZE];
     char recv_msg[BUFF_SIZE];
-    unsigned int prio = 1;
 
     /*Cola de mensajes entre servidor primario y servicio de autentificacion*/
     mqd_t qda = mq_open(QUEUEPATHAUTH, O_RDWR | O_CREAT, 0666 , &queue_atributes);
@@ -70,28 +81,28 @@ int main(void){
     }
   
     fflush(stdout); //fuerza la descarga del buffer
-    fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
-    lenght_client = (int32_t) sizeof (struct sockaddr_in);
-    connected = true;
+    while(fdc == -1){
+        fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
+        if(fdc == -1){
+            perror("No se ha podido aceptar la conecxion:");
+        }
+    }
     printf("Nuevo cliente aceptado\n");
 
-    do{
-        while(connected){
+    while(1){
+        while(1){
+            bzero(msjserver, BUFF_SIZE);
             bzero(msjclient, BUFF_SIZE); 
-            recv(fdc,msjclient, BUFF_SIZE, 0);
+            if(recv(fdc,msjclient, BUFF_SIZE, 0) == -1){
+                perror("No se ha podido recibir el mensaje del cliente: ");
+                exit(EXIT_FAILURE);
+            }
 
             if(strstr(msjclient, "exit") != NULL && (int) strlen(msjclient) == 5){      //Si recibo un exit   
                 login = false;
-                connected = false;
+                fdc = -1;
                 strcpy(sent_msg, "logout");
-                if (  mq_send(qda, sent_msg, BUFF_SIZE, (unsigned int) 1) == -1){
-                perror("Sending");
-                exit(EXIT_FAILURE);
-                }
-                if (mq_receive(qda, recv_msg, BUFF_SIZE, &prio) == -1 ){
-                        perror("Receiving");
-                        exit(EXIT_FAILURE);
-                }
+                sentrevcposix(qda, sent_msg, recv_msg);
                 bzero(recv_msg, BUFF_SIZE);
                 break;
             }
@@ -100,30 +111,11 @@ int main(void){
             strtok(msjclient, " ");
             if(strstr(msjclient, "file")){                                          //Verifico para que servicio es el mensaje y si esta logueado
                 if(login){                                                          //Mensaje es para el servicio de archivos
-                    if (  mq_send(qdf, sent_msg, BUFF_SIZE, (unsigned int) 1) == -1){
-                        perror("Sending");
-                        exit(EXIT_FAILURE);
-                    }
-                    bzero(sent_msg, BUFF_SIZE);
-                    
-                    if (mq_receive(qdf, recv_msg, BUFF_SIZE, &prio) == -1 ){
-                                perror("Receiving");
-                                exit(EXIT_FAILURE);
-                        }
+                    sentrevcposix(qdf, sent_msg, recv_msg);
                 }else
                     strcpy(recv_msg, "Comando incorrecto");
             }else{                                                                  //Mensaje es para el servicio de autentificacion
-                if (  mq_send(qda, sent_msg, BUFF_SIZE, (unsigned int) 1) == -1){
-                    perror("Sending");
-                    exit(EXIT_FAILURE);
-                }
-                bzero(sent_msg, BUFF_SIZE);
-                
-                if (mq_receive(qda, recv_msg, BUFF_SIZE, &prio) == -1 ){
-                            perror("Receiving");
-                            exit(EXIT_FAILURE);
-                    }
-
+                sentrevcposix(qda, sent_msg, recv_msg);
                 if(strstr(recv_msg, "Se ha logueado correctamente") !=NULL){    //Verifico si se logueo
                     login = true;
                 }else
@@ -133,16 +125,17 @@ int main(void){
             }
             
             strcpy(msjserver, recv_msg);
-            bzero(recv_msg, BUFF_SIZE);
-
-            send(fdc, msjserver, BUFF_SIZE, 0);
-            bzero(msjserver, BUFF_SIZE); 
+            if(send(fdc, msjserver, BUFF_SIZE, 0) == -1){
+                perror("No se ha podido enviar un mensaje al cliente: ");
+                exit(EXIT_FAILURE);
+            }
         }
-        fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
-        lenght_client = (int32_t) sizeof (struct sockaddr_in);
-        connected = true;
-        printf("Nuevo cliente aceptado\n");
-    }while(1);
-
+        while(fdc == -1){
+            fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
+            if(fdc == -1){
+                perror("No se ha podido aceptar la conecxion:");
+            }
+        }
+    }
     return 0;
 }

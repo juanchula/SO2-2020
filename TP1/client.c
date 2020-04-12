@@ -231,9 +231,16 @@ int main(){
             bzero(msjserver, sizeof(msjserver)); 
             printf("%s", PCTERMINAL);
             fgets(msjclient, BUFF_SIZE-1, stdin );
-            send(sockfd, msjclient, BUFF_SIZE, 0);
+            if(send(sockfd, msjclient, BUFF_SIZE, 0) == -1){
+                perror("No se ha podido enviar un mensaje al servidor: ");
+                exit(EXIT_FAILURE);
+            }
 
-            recv(sockfd,msjserver, BUFF_SIZE, 0);
+            if(recv(sockfd,msjserver, BUFF_SIZE, 0) == -1){
+                perror("No se ha podido recibir el mensaje del servidor: ");
+                exit(EXIT_FAILURE);
+            }
+
             if(strstr(msjserver, "Conectar puerto de transferencia.") != NULL){
                 break;
             }
