@@ -1,3 +1,9 @@
+/**
+ * @file main.c
+ * @author Juan Ignacio Fernandez
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -18,6 +24,11 @@
 
 int fdsocket;
 
+/**
+ * @brief Calcula la cantidad de espacios del contenido del arreglo de char
+ * @param txt Puntero de arreglo de char a procesar
+ * @return Numero de espacios
+ */
 int amountspace(char * txt){
     int space = 0;
     //int length = sizeof(txt);
@@ -30,6 +41,10 @@ int amountspace(char * txt){
     return space;
 }
 
+/**
+ * @brief Muestra la tabla de particion de una iso
+ * @param isoname Puntero de arreglo de char que contiene el nombre de la iso
+ */
 void partitiontable(char * isoname){
     char url[BUFF_SIZE];
     strcpy(url, FOLDER);
@@ -54,12 +69,20 @@ void partitiontable(char * isoname){
     fclose(image);
 }
 
+/**
+ * @brief Funcion encargada de procesar la interrupcion por control+c . Envia un cierre de conexion al servidor principal
+ */
 void controlc(){
     char msjclient[BUFF_SIZE] ="exit\n";
     send(fdsocket, msjclient, BUFF_SIZE, 0);
     exit(0);
 }
 
+/**
+ * @brief Calcula el MD5HASH de un archivo
+ * @param iso Puntero al arreglo de char que contiene el nombre del archivo
+ * @param md5 Puntero al arreglo de char donde se cargara el MD5
+ */
 //SACADO DE: https://stackoverflow.com/questions/10324611/how-to-calculate-the-md5-hash-of-a-large-file-in-c
 void calcmd5(char *iso, char *md5){
     bzero(md5, BUFF_SIZE);
@@ -91,6 +114,12 @@ void calcmd5(char *iso, char *md5){
     fclose(inFile);
 }
 
+/**
+ * @brief Graba la iso en el USB
+ * @param usb Puntero de arreglo de char que contiene el nombre del usb
+ * @param iso Puntero de arreglo de char que contiene el nombre de la iso
+ * @return 0
+ */
 int burniso(char *usb, char *iso){
     if(strstr(usb, "sda") !=NULL){
         printf("Esta intentando escribir el disco\n");
@@ -131,6 +160,12 @@ int burniso(char *usb, char *iso){
     return 0;
 }
 
+/**
+ * @brief Realiza la recepcion de la iso y luego muestra la tabla de particiones y verifica el MD5
+ * @param msjserver Puntero de arreglo de char que contiene el tamaño y md5 de la iso entre otras cosas
+ * @param msjclient Puntero de arreglo de char que contiene el nobmre del archivo entre otras cosas
+ * @param sockfile File descriptor del socket de transferencia de archivo
+ */
 void receivefile(char* msjserver, char *msjclient, int sockfile){
     char buffer[BUFF_SIZE];
     ssize_t receivedbyte;
@@ -177,7 +212,10 @@ void receivefile(char* msjserver, char *msjclient, int sockfile){
     close(sockfile);
 }
 
-
+/**
+ * @brief Funcion principal del cliente. Realiza conexiones, interactua con el servidor (envia/recibe mensajes y los procesa) y servicio de archivo (recibe archivos)
+ * @return 0
+ */
 int main(){
     char msjserver[BUFF_SIZE]; 
     char msjclient[BUFF_SIZE]; 

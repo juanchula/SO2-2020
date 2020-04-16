@@ -4,6 +4,7 @@
 #include <time.h>
 #include <string.h>
 #include <dirent.h>
+#include <unistd.h>
 
 int amountspace(char * txt){
     int space = 0;
@@ -233,23 +234,44 @@ int main()
 
 
 
-    char i[1];
-    FILE *original = fopen("./isos/debian-10.3.0-amd64-netinst.iso", "rb");
-    FILE *copia = fopen("/dev/sdb1", "r+b");
-    if(original == NULL){
-        perror("No se ha podido abrir el archivo: ");
-        return 0;
-    }
-    if(copia == NULL){
-        perror("No se ha podido acceder al usb: ");
-        return 0;
-    }
+    // char i[1];
+    // FILE *original = fopen("./isos/debian-10.3.0-amd64-netinst.iso", "rb");
+    // FILE *copia = fopen("/dev/sdb1", "r+b");
+    // if(original == NULL){
+    //     perror("No se ha podido abrir el archivo: ");
+    //     return 0;
+    // }
+    // if(copia == NULL){
+    //     perror("No se ha podido acceder al usb: ");
+    //     return 0;
+    // }
 
-    while(!feof(original)){
-        fread(i, sizeof(char), 1, original);
-        fwrite(i, sizeof(char), 1, copia);
+    // while(!feof(original)){
+    //     fread(i, sizeof(char), 1, original);
+    //     fwrite(i, sizeof(char), 1, copia);
+    // }
+    // fclose(original);
+    // fclose(copia);
+    // printf("Se ha terminado de quemar el USB\n");
+    __pid_t pidauth;
+    __pid_t pidfile;
+    printf("hola kapo 1\n");
+    pidauth = fork();
+    printf("hola kapo 2: %d\n", getpid());
+    if(pidauth>0){
+        printf("soy el padre: %d, %d\n", getpid(), pidauth);
+        pidfile = fork();
     }
-    fclose(original);
-    fclose(copia);
-    printf("Se ha terminado de quemar el USB\n");
+    if(pidauth == 0){
+        printf("soy el auth: %d\n", getpid());
+    }
+    if(pidfile == 0 && pidauth>0){
+        printf("soy el file: %d, %d\n", getpid(), pidauth);
+    }
+    
+    if(pidauth>0 && pidfile>0){
+        printf("soy el padre: %d, %d\n", getpid(), pidauth);
+    }
+    sleep(10);
+    return 0;
 }
