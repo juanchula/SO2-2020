@@ -1,3 +1,9 @@
+/**
+ * @file server.c
+ * @author Juan Ignacio Fernandez
+ */
+
+
 #include "auth.h"
 #include "fileserv.h"
 #include <stdio.h>
@@ -17,6 +23,13 @@
 #define QUEUEPATHAUTH "/auth_service"
 #define QUEUEPATHFILE "/file_service"
 
+
+/**
+ * @brief Realiza la transferencia y recepcion de las colas de mensaje
+ * @param qd File descriptor de la cola de mensaje
+ * @param sent_msg Puntero al arreglo de char que contiene el mensaje a enviar
+ * @param recv_msg Puntero al arreglo de char donde se guardara el mensaje recibido
+ */
 void sentrevcposix(int qd, char *sent_msg, char *recv_msg){
     unsigned int prio = 1;
     bzero(recv_msg, BUFF_SIZE);
@@ -31,6 +44,10 @@ void sentrevcposix(int qd, char *sent_msg, char *recv_msg){
     bzero(sent_msg, BUFF_SIZE);
 }
 
+/**
+ * @brief Funcion principal del servidor principal. Acepta conexiones, crea cola de mensajes y procesa los mensajes del cliente
+ * @return 0
+ */
 int main(){
     __pid_t pidauth;
     __pid_t pidfile;
