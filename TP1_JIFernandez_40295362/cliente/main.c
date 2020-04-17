@@ -42,6 +42,25 @@ int amountspace(char * txt){
 }
 
 /**
+ * @brief Muestra en pantalla una cantidad de espacios que depende de la longitud de num
+ * @param num Numero que se usara para calcular la cantiad de espacios
+ */
+void printspace(long int num){
+    int i = 17;
+    int sizenum = 0;
+
+    do{
+        sizenum++;
+        num /= 10;
+    }while(num != 0);
+    i -= sizenum;
+    while(i >= 0){
+        printf(" ");
+        i--;
+    }
+}
+
+/**
  * @brief Muestra la tabla de particion de una iso
  * @param isoname Puntero de arreglo de char que contiene el nombre de la iso
  */
@@ -49,8 +68,12 @@ void partitiontable(char * isoname){
     char url[BUFF_SIZE];
     unsigned char hex[510];
     char temp[4];
+    char typep[4];
     char temp4[60];
-    long int size;
+    long int sizep;
+    long int startp;
+    long int endp;
+    int bootp;
     int p = 4;
     size_t i = 509;
     size_t j = 0;
@@ -67,48 +90,55 @@ void partitiontable(char * isoname){
         }
 
     fread(hex, 1, sizeof hex, image);
-    printf("PARTICION       FIN    INICIO      TIPO        BOOTEABLE");
+    printf("PARTICION       BOOTEABLE           COMIENZO          FINAL             SECTORES          ID\n");
     while(i>445){
         while(1){
             z = i + j;
             sprintf(temp, "%02x", hex[i]);
-            // printf("\n%s\n", temp);
             if(z>505 && z<510){
-                strcat(temp4, (char *)temp);
+                strcat(temp4, temp);
                 if(z == 506){
-                    // printf("\nTamaño fin: %s\n", temp4);
-                    size = (int) strtol(temp4, NULL, 16);
+                    sizep = (int) strtol(temp4, NULL, 16);
                     bzero(temp4, 60);
-                    if(size == 0){
+                    if(sizep == 0){
                         i-=12;
                         p--;
                         break;
                     }else{
-                        printf("Particion %i:    %li", p, size);
+                        printf("Particion %i:", p);
                         p--;
                     }
                 }
             }
             if(z>501 && z<506){
-                strcat(temp4, (char *)temp);
+                strcat(temp4, temp);
                 if(z == 502){
                     // printf("\nTamaño inicio: %s\n", temp4);
-                    size = (int) strtol(temp4, NULL, 16);
+                    startp = (int) strtol(temp4, NULL, 16);
                     bzero(temp4, 60);
-                    printf("    %li", size);
+                    endp = startp + sizep;
+                    // printf("        %li         %li", endp, startp);
                 }
             }
             if(z == 498){
-                printf("        %s", temp);
+                strcpy(typep, temp);
+                // printf("        %s", temp);
             }
             if(z == 494){
-                size = (int) strtol(temp, NULL, 16);
-                if(size == 0){
-                    printf("              NO");
+                bootp = (int) strtol(temp, NULL, 16);
+                if(bootp == 0){
+                    printf("        No              ");
                 } else{
-                    printf("              SI");
+                    printf("        SI              ");
                 }
                 i--;
+                printf("%li", startp);
+                printspace(startp);
+                printf("%li", endp);
+                printspace(endp);
+                printf("%li", sizep);
+                printspace(sizep);
+                printf("%s", typep);
                 printf("\n");
                 break;
             }
@@ -214,9 +244,8 @@ int burniso(char *usb, char *iso){
  * @brief Realiza la recepcion de la iso y luego muestra la tabla de particiones y verifica el MD5
  * @param msjserver Puntero de arreglo de char que contiene el tamaño y md5 de la iso entre otras cosas
  * @param msjclient Puntero de arreglo de char que contiene el nobmre del archivo entre otras cosas
- * @param sockfile File descriptor del socket de transferencia de archivo
  */
-void receivefile(char* msjserver, char *msjclient, int sockfile){
+void receivefile(char* msjserver, char *msjclient){
     char buffer[BUFF_SIZE];
     ssize_t receivedbyte;
     double missingbytes;
@@ -226,6 +255,21 @@ void receivefile(char* msjserver, char *msjclient, int sockfile){
     char url[BUFF_SIZE];
     char isoname[BUFF_SIZE];
     char usbname[BUFF_SIZE];
+    int sockfile;
+    
+    sockfile = socket(AF_INET, SOCK_STREAM, 0); 
+    if (sockfile == -1) { 
+        perror("socket creation failed...\n"); 
+        exit(EXIT_FAILURE); 
+    }
+    struct sockaddr_in * servaddrfile = calloc(1, sizeof (struct sockaddr_in));
+    servaddrfile->sin_family = AF_INET;
+    servaddrfile->sin_port = htons(PORTFILE);
+    servaddrfile->sin_addr.s_addr = INADDR_ANY;
+    if (connect(sockfile, (struct sockaddr *)  servaddrfile, sizeof (struct sockaddr)) != 0) { 
+        perror("connection with the server failed: "); 
+        exit(EXIT_FAILURE);
+    }
 
     sscanf(msjserver, "%*s %*s %*s %*s %*s %*s %*s %*s %s %s", filesize, originalmd5);
     sscanf(msjclient, "%*s %*s %s", isoname);
@@ -240,11 +284,14 @@ void receivefile(char* msjserver, char *msjclient, int sockfile){
         perror("No se a podido abrir el archivo: ");
         exit(EXIT_FAILURE);
     }
-
-    while (((receivedbyte = recv(sockfile, buffer, BUFF_SIZE, 0)) > 0) && (missingbytes > 0)){
+    while ((receivedbyte = recv(sockfile, buffer, BUFF_SIZE, 0)) > 0){
         fwrite(buffer, sizeof(char), (size_t) receivedbyte, image);
         missingbytes -= (int) receivedbyte;
+         if(missingbytes == 0){
+             break;
+         }
     }
+    printf("HOLAAA\n");
     fclose(image);
 
     calcmd5(isoname, localmd5);
@@ -270,7 +317,6 @@ int main(){
     char msjserver[BUFF_SIZE]; 
     char msjclient[BUFF_SIZE]; 
     int sockfd;
-    int sockfile; 
 
     struct sigaction sa;
     sa.sa_handler = controlc;
@@ -295,18 +341,6 @@ int main(){
     servaddrmsj->sin_family = AF_INET;
     servaddrmsj->sin_port = htons(PORTMSJ);
     servaddrmsj->sin_addr.s_addr = INADDR_ANY;
-
-    sockfile = socket(AF_INET, SOCK_STREAM, 0); 
-    if (sockfile == -1) { 
-        perror("socket creation failed...\n"); 
-        exit(EXIT_FAILURE); 
-    }
-  
-    // create and assign IP, PORT 
-    struct sockaddr_in * servaddrfile = calloc(1, sizeof (struct sockaddr_in));
-    servaddrfile->sin_family = AF_INET;
-    servaddrfile->sin_port = htons(PORTFILE);
-    servaddrfile->sin_addr.s_addr = INADDR_ANY;
   
     // connect the client socket to server socket 
     if (connect(sockfd, (struct sockaddr *)  servaddrmsj, sizeof (struct sockaddr)) != 0) { 
@@ -334,12 +368,8 @@ int main(){
             }
             printf("%s\n", msjserver);
         }
-        if (connect(sockfile, (struct sockaddr *)  servaddrfile, sizeof (struct sockaddr)) != 0) { 
-            perror("connection with the server failed...\n"); 
-            exit(EXIT_FAILURE);
-        }
         printf("Transferencia iniciada\n");
-        receivefile(msjserver, msjclient, sockfile);
+        receivefile(msjserver, msjclient);
     }
     close(sockfd); 
 } 

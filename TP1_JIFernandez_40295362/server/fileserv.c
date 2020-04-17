@@ -179,7 +179,7 @@ int fsmain(){
 
 
     int sfd;
-    int fdc;
+    int fdc = -1;
 
     sfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sfd == -1) { 
@@ -212,7 +212,7 @@ int fsmain(){
     }
     unsigned int prio = 1;
     while(1){
-        do{
+        while(transfer == false){
             bzero(recv_msg, BUFF_SIZE);
             bzero(sent_msg, BUFF_SIZE);
             if (mq_receive(qd, recv_msg, BUFF_SIZE, &prio) == -1 ){
@@ -257,14 +257,13 @@ int fsmain(){
                 perror("Error en envio de mensaje de servicio de autentificacion: ");
                 exit(EXIT_FAILURE);
             }
-        }while(!transfer);
+        }
         fdc = accept(sfd, (struct sockaddr *) client, (socklen_t *) &lenght_client);
         lenght_client = (int32_t) sizeof (struct sockaddr_in);
         sendiso(argthree, fdc, filetransfer);
         bzero(argthree, BUFF_SIZE);
         bzero(filetransfer, BUFF_SIZE);
         transfer = false;
-        close(fdc);
     }
     return 0;
 }

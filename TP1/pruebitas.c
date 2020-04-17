@@ -161,12 +161,29 @@ void partitiontable3(char *part1, char *part2, char *part3, char *part4){
     }
     fclose(image);
 }
+void printspace(long int num){
+    int i = 17;
+    int sizenum = 0;
 
+    do{
+        sizenum++;
+        num /= 10;
+    }while(num != 0);
+    i -= sizenum;
+    while(i >= 0){
+        printf(" ");
+        i--;
+    }
+}
 void partitiontable4(){
     unsigned char hex[510];
     char temp[4];
+    char typep[4];
     char temp4[60];
-    long int size;
+    long int sizep;
+    long int startp;
+    long int endp;
+    int bootp;
     int p = 4;
 
     FILE *image = fopen("./isos/ejemplo.iso", "rb");
@@ -174,7 +191,7 @@ void partitiontable4(){
             perror("No se a podido abrir el archivo: ");
             exit(EXIT_FAILURE);
         }
-    printf("PARTICION       FIN    INICIO      TIPO        BOOTEABLE");
+    printf("PARTICION       BOOTEABLE           COMIENZO          FINAL             SECTORES          ID");
     printf("\n");
     fread(hex, 1, sizeof hex, image);
     // for(size_t j = 0; j < (sizeof(hex)) ; j++) {
@@ -191,14 +208,14 @@ void partitiontable4(){
                 strcat(temp4, temp);
                 if(z == 506){
                     // printf("\nTamaño fin: %s\n", temp4);
-                    size = (int) strtol(temp4, NULL, 16);
+                    sizep = (int) strtol(temp4, NULL, 16);
                     bzero(temp4, 60);
-                    if(size == 0){
+                    if(sizep == 0){
                         i-=12;
                         p--;
                         break;
                     }else{
-                        printf("Particion %i:    %li", p, size);
+                        printf("Particion %i:", p);
                         p--;
                     }
                 }
@@ -207,22 +224,31 @@ void partitiontable4(){
                 strcat(temp4, temp);
                 if(z == 502){
                     // printf("\nTamaño inicio: %s\n", temp4);
-                    size = (int) strtol(temp4, NULL, 16);
+                    startp = (int) strtol(temp4, NULL, 16);
                     bzero(temp4, 60);
-                    printf("    %li", size);
+                    endp = startp + sizep;
+                    // printf("        %li         %li", endp, startp);
                 }
             }
             if(z == 498){
-                printf("        %s", temp);
+                strcpy(typep, temp);
+                // printf("        %s", temp);
             }
             if(z == 494){
-                size = (int) strtol(temp, NULL, 16);
-                if(size == 0){
-                    printf("        No booteable");
+                bootp = (int) strtol(temp, NULL, 16);
+                if(bootp == 0){
+                    printf("        No              ");
                 } else{
-                    printf("        Booteable");
+                    printf("        SI              ");
                 }
                 i--;
+                printf("%li", startp);
+                printspace(startp);
+                printf("%li", endp);
+                printspace(endp);
+                printf("%li", sizep);
+                printspace(sizep);
+                printf("%s", typep);
                 printf("\n");
                 break;
             }
