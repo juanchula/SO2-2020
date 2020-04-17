@@ -5,7 +5,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <unistd.h>
-
+#define BUFF_SIZE 1024
 int amountspace(char * txt){
     int space = 0;
     //int length = sizeof(txt);
@@ -55,8 +55,204 @@ int ascii_to_hex(char c)
         return num;
 }
 
+void partitiontable(char *txt){
+    unsigned char hex[510];
+    char temp[4];
+    char pruebas[1024] = ""; 
+    FILE *image = fopen("./isos/ejemplo.iso", "rb");
+    if(image == NULL){
+            perror("No se a podido abrir el archivo: ");
+            exit(EXIT_FAILURE);
+        }
+
+    fread(hex, 1, sizeof hex, image);
+    for(size_t j = 0; j < (sizeof(hex)) ; j++) {
+        if(j==510){
+            break;
+        }
+        if(j>=446){
+            sprintf(temp, "%02x", hex[j]);
+            // printf("%02x ", hex[j]);
+            strcat(txt, temp);
+            strcat(txt, " ");
+            printf("%s", temp);
+        }
+        if(j==461 || j==477 || j==493){
+            printf("\n");
+            strcat(txt, "\n");
+        }
+    }
+    printf("\n");
+    fclose(image);
+    // printf("%s\n", pruebas);
+}
+
+void partitiontable2(char *part1, char *part2, char *part3, char *part4){
+    bzero(part1, BUFF_SIZE);
+    bzero(part2, BUFF_SIZE);
+    bzero(part3, BUFF_SIZE);
+    bzero(part4, BUFF_SIZE);
+    unsigned char hex[510];
+    unsigned char temp[4];
+    FILE *image = fopen("./isos/ejemplo.iso", "rb");
+    if(image == NULL){
+            perror("No se a podido abrir el archivo: ");
+            exit(EXIT_FAILURE);
+        }
+
+    fread(hex, 1, sizeof hex, image);
+    for(size_t j = 0; j < (sizeof(hex)) ; j++) {
+        sprintf(temp, "%02x", hex[j]);
+        if(j>445 && j<462){
+            strcat(part1, temp);
+            strcat(part1, " ");
+        }
+         if(j>461 && j<478){
+            strcat(part2, temp);
+            strcat(part2, " ");
+        }
+         if(j>477 && j<494){
+            strcat(part3, temp);
+            strcat(part3, " ");
+        }
+         if(j>493 && j<510){
+            strcat(part4, temp);
+            strcat(part4, " ");
+        }
+    }
+    fclose(image);
+}
+
+void partitiontable3(char *part1, char *part2, char *part3, char *part4){
+    bzero(part1, BUFF_SIZE);
+    bzero(part2, BUFF_SIZE);
+    bzero(part3, BUFF_SIZE);
+    bzero(part4, BUFF_SIZE);
+    unsigned char hex[510];
+    unsigned char temp[4];
+    FILE *image = fopen("./isos/ejemplo.iso", "rb");
+    if(image == NULL){
+            perror("No se a podido abrir el archivo: ");
+            exit(EXIT_FAILURE);
+        }
+
+    fread(hex, 1, sizeof hex, image);
+    // for(size_t j = 0; j < (sizeof(hex)) ; j++) {
+    size_t j = 509;
+    while(j>445){
+        sprintf(temp, "%02x", hex[j]);
+        if(j>445 && j<462){
+            strcat(part1, temp);
+            strcat(part1, " ");
+        }
+         if(j>461 && j<478){
+            strcat(part2, temp);
+            strcat(part2, " ");
+        }
+         if(j>477 && j<494){
+            strcat(part3, temp);
+            strcat(part3, " ");
+        }
+         if(j>493 && j<510){
+            strcat(part4, temp);
+            strcat(part4, " ");
+        }
+        j--;
+    }
+    fclose(image);
+}
+
+void partitiontable4(){
+    unsigned char hex[510];
+    char temp[4];
+    char temp4[60];
+    long int size;
+    int p = 4;
+
+    FILE *image = fopen("./isos/ejemplo.iso", "rb");
+    if(image == NULL){
+            perror("No se a podido abrir el archivo: ");
+            exit(EXIT_FAILURE);
+        }
+    printf("PARTICION       FIN    INICIO      TIPO        BOOTEABLE");
+    printf("\n");
+    fread(hex, 1, sizeof hex, image);
+    // for(size_t j = 0; j < (sizeof(hex)) ; j++) {
+    size_t i = 509;
+    size_t j = 0;
+    size_t z;
+    bzero(temp4, 12);
+    while(i>445){
+        while(1){
+            z = i + j;
+            sprintf(temp, "%02x", hex[i]);
+            // printf("\n%s\n", temp);
+            if(z>505 && z<510){
+                strcat(temp4, temp);
+                if(z == 506){
+                    // printf("\nTamaño fin: %s\n", temp4);
+                    size = (int) strtol(temp4, NULL, 16);
+                    bzero(temp4, 60);
+                    if(size == 0){
+                        i-=12;
+                        p--;
+                        break;
+                    }else{
+                        printf("Particion %i:    %li", p, size);
+                        p--;
+                    }
+                }
+            }
+            if(z>501 && z<506){
+                strcat(temp4, temp);
+                if(z == 502){
+                    // printf("\nTamaño inicio: %s\n", temp4);
+                    size = (int) strtol(temp4, NULL, 16);
+                    bzero(temp4, 60);
+                    printf("    %li", size);
+                }
+            }
+            if(z == 498){
+                printf("        %s", temp);
+            }
+            if(z == 494){
+                size = (int) strtol(temp, NULL, 16);
+                if(size == 0){
+                    printf("        No booteable");
+                } else{
+                    printf("        Booteable");
+                }
+                i--;
+                printf("\n");
+                break;
+            }
+            i--;
+        }
+        j+=16;
+    }
+    fclose(image);
+}
+
 int main()
 {
+    // char a[BUFF_SIZE];
+    // char b[BUFF_SIZE];
+    // char c[BUFF_SIZE];
+    // char d[BUFF_SIZE];
+    // partitiontable3(a, b, c, d);
+    // printf("%s\n%s\n%s\n%s SAPEE", a, b, c, d);
+    // char algo[200]= "AA";
+    // int numero = (int) strtol(algo, NULL, 16);
+    // printf("\n\n %d", numero);
+
+
+    partitiontable4();
+
+    // char txt[1024];
+    // partitiontable(txt);
+    // printf("Holaa: %s", txt);
+
+
     // int line = 5;
     // char *txt = "ESTA NUEVA LINEA DEBE ESTAR EN 6\n";
     // int i = 0;
@@ -253,25 +449,28 @@ int main()
     // fclose(original);
     // fclose(copia);
     // printf("Se ha terminado de quemar el USB\n");
-    __pid_t pidauth;
-    __pid_t pidfile;
-    printf("hola kapo 1\n");
-    pidauth = fork();
-    printf("hola kapo 2: %d\n", getpid());
-    if(pidauth>0){
-        printf("soy el padre: %d, %d\n", getpid(), pidauth);
-        pidfile = fork();
-    }
-    if(pidauth == 0){
-        printf("soy el auth: %d\n", getpid());
-    }
-    if(pidfile == 0 && pidauth>0){
-        printf("soy el file: %d, %d\n", getpid(), pidauth);
-    }
+    // __pid_t pidauth;
+    // __pid_t pidfile;
+    // printf("hola kapo 1\n");
+    // pidauth = fork();
+    // printf("hola kapo 2: %d\n", getpid());
+    // if(pidauth>0){
+    //     printf("soy el padre: %d, %d\n", getpid(), pidauth);
+    //     pidfile = fork();
+    // }
+    // if(pidauth == 0){
+    //     printf("soy el auth: %d\n", getpid());
+    // }
+    // if(pidfile == 0 && pidauth>0){
+    //     printf("soy el file: %d, %d\n", getpid(), pidauth);
+    // }
     
-    if(pidauth>0 && pidfile>0){
-        printf("soy el padre: %d, %d\n", getpid(), pidauth);
-    }
-    sleep(10);
+    // if(pidauth>0 && pidfile>0){
+    //     printf("soy el padre: %d, %d\n", getpid(), pidauth);
+    // }
+    // sleep(10);
+
+
+    
     return 0;
 }

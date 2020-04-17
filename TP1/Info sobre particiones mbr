@@ -2,12 +2,12 @@ Informacion de particiones:
     Desde byte 446 hasta el 509. Copiar los primeros 510 bytes y quedarse con los ultimos 64 bytes
     
 Informacio:
-0 byte (tamaño 1): 80 -> Activa/boteable
-1-3(tamaño 3): Straring CHS values (marca donde arranca esa particiones con respecto a la cabezera, el plato del disco. No sirve
-4 (tamaño 1): El tipo de descritor de la tabla (tipo de particion) (Tipo 7: HPFS/NTFS/exFAT)
-5-7 (tamaño 3): Donde termina
-8-11 (tamaño 4): Sector de inicio. Donde arranca (en sector)
-12-15 (tamaño 4): Tamaño de la particion (expresada en sectores). Hay que multiplicarlo por el tamaño del sector para sacarlo en mb
+0 byte (tamaño 1): 80 -> Activa/boteable                                                                                                    SI  4
+1-3(tamaño 3): Straring CHS values (marca donde arranca esa particiones con respecto a la cabezera, el plato del disco. No sirve            NO
+4 (tamaño 1): El tipo de descritor de la tabla (tipo de particion) (Tipo 7: HPFS/NTFS/exFAT)                                                SI  1
+5-7 (tamaño 3): Donde termina                                                                                                               NO
+8-11 (tamaño 4): Sector de inicio. Donde arranca (en sector)                                                                                SI  2
+12-15 (tamaño 4): Tamaño de la particion (expresada en sectores). Hay que multiplicarlo por el tamaño del sector para sacarlo en mb         SI  3
 
 Recordar que se lee al revez (Primeros numeros son los de menos importante) (bit de la izquierda es el menos significativo
 osea 0001 -> 1000

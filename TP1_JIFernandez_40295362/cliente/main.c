@@ -47,9 +47,19 @@ int amountspace(char * txt){
  */
 void partitiontable(char * isoname){
     char url[BUFF_SIZE];
+    unsigned char hex[510];
+    char temp[4];
+    char temp4[60];
+    long int size;
+    int p = 4;
+    size_t i = 509;
+    size_t j = 0;
+    size_t z;
+
     strcpy(url, FOLDER);
     strcat(url, isoname);
-    unsigned char hex[510]; 
+    bzero(temp4, 12);
+
     FILE *image = fopen(url, "rb");
     if(image == NULL){
             perror("No se a podido abrir el archivo: ");
@@ -57,15 +67,55 @@ void partitiontable(char * isoname){
         }
 
     fread(hex, 1, sizeof hex, image);
-    for(size_t j = 0; j < (sizeof(hex)) ; j++) {
-        if(j>=446){
-            printf("%02x ", hex[j]);
+    printf("PARTICION       FIN    INICIO      TIPO        BOOTEABLE");
+    while(i>445){
+        while(1){
+            z = i + j;
+            sprintf(temp, "%02x", hex[i]);
+            // printf("\n%s\n", temp);
+            if(z>505 && z<510){
+                strcat(temp4, (char *)temp);
+                if(z == 506){
+                    // printf("\nTamaño fin: %s\n", temp4);
+                    size = (int) strtol(temp4, NULL, 16);
+                    bzero(temp4, 60);
+                    if(size == 0){
+                        i-=12;
+                        p--;
+                        break;
+                    }else{
+                        printf("Particion %i:    %li", p, size);
+                        p--;
+                    }
+                }
+            }
+            if(z>501 && z<506){
+                strcat(temp4, (char *)temp);
+                if(z == 502){
+                    // printf("\nTamaño inicio: %s\n", temp4);
+                    size = (int) strtol(temp4, NULL, 16);
+                    bzero(temp4, 60);
+                    printf("    %li", size);
+                }
+            }
+            if(z == 498){
+                printf("        %s", temp);
+            }
+            if(z == 494){
+                size = (int) strtol(temp, NULL, 16);
+                if(size == 0){
+                    printf("              NO");
+                } else{
+                    printf("              SI");
+                }
+                i--;
+                printf("\n");
+                break;
+            }
+            i--;
         }
-        if(j==461 || j==477 || j==493){
-            printf("\n");
-        }
+        j+=16;
     }
-    printf("\n");
     fclose(image);
 }
 
