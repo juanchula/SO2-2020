@@ -15,8 +15,8 @@
 
 #define QUEUEPATH "/file_service"
 #define BUFF_SIZE 1024
-#define DIRECTORY "/home/juanfernandez/Facu/SO2-2020/TP1_JIFernandez_40295362/isos-server/"
-#define DIRECTORYDIR "/home/juanfernandez/Facu/SO2-2020/TP1_JIFernandez_40295362/isos-server"
+#define DIRECTORY "../isos-server/"
+#define DIRECTORYDIR "../isos-server"
 #define PORTF 5555
 
 //SACADO DE: https://stackoverflow.com/questions/10324611/how-to-calculate-the-md5-hash-of-a-large-file-in-c

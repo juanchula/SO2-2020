@@ -16,10 +16,8 @@
 #include <signal.h>
 
 #define BUFF_SIZE 1024
-#define BIT_SIZE 1
 #define PORTMSJ 4444
 #define PORTFILE 5555
-#define FOLDER "/home/juanfernandez/Facu/SO2-2020/TP1_JIFernandez_40295362/isos-cliente/"
 #define PCTERMINAL "juanfernandez@Juan-Lenovo ->"
 
 int fdsocket;
@@ -64,7 +62,7 @@ void printspace(long int num){
  * @brief Muestra la tabla de particion de una iso
  * @param isoname Puntero de arreglo de char que contiene el nombre de la iso
  */
-void partitiontable(char * isoname){
+void partitiontable(char * usb){
     char url[BUFF_SIZE];
     unsigned char hex[510];
     char temp[4];
@@ -79,8 +77,8 @@ void partitiontable(char * isoname){
     size_t j = 0;
     size_t z;
 
-    strcpy(url, FOLDER);
-    strcat(url, isoname);
+    strcpy(url, "/dev/");
+    strcat(url, usb);
     bzero(temp4, 12);
 
     FILE *image = fopen(url, "rb");
@@ -160,15 +158,17 @@ void controlc(){
 
 /**
  * @brief Calcula el MD5HASH de un archivo
- * @param iso Puntero al arreglo de char que contiene el nombre del archivo
+ * @param usb Puntero al arreglo de char que contiene el nombre del usb
  * @param md5 Puntero al arreglo de char donde se cargara el MD5
+ * @param totalbytes tamaño del archivo
+ * @return 1 si se completo con exito, 0 si fallo
  */
 //SACADO DE: https://stackoverflow.com/questions/10324611/how-to-calculate-the-md5-hash-of-a-large-file-in-c
-void calcmd5(char *iso, char *md5){
+int calcmd5(char *usb, char *md5, double totalbytes){
     bzero(md5, BUFF_SIZE);
     char aux[2] = "";
-    char url[BUFF_SIZE] = FOLDER;
-    strcat(url, iso);
+    char url[BUFF_SIZE] = "/dev/";
+    strcat(url, usb);
     unsigned char c[MD5_DIGEST_LENGTH];
     FILE *inFile = fopen (url, "rb");
     MD5_CTX mdContext;
@@ -177,67 +177,32 @@ void calcmd5(char *iso, char *md5){
 
     if (inFile == NULL) {
         perror("No se ha podido abrir la isos: ");
-        exit (EXIT_FAILURE);
+        return 0;
     }
 
     MD5_Init (&mdContext);
-    while ((bytes = fread(data, 1, BUFF_SIZE, inFile))){
+    while(totalbytes >= BUFF_SIZE){
+        bytes = fread(data, 1, BUFF_SIZE, inFile);
+        if(bytes == 0){
+            perror("Error al calcular el MD5: ");
+            fclose(inFile);
+            return 0;
+        }
         MD5_Update (&mdContext, data, bytes);
+        totalbytes -= (double) bytes;
+    }
+    if(totalbytes > 0){
+         bytes = fread(data, 1, (size_t) totalbytes, inFile);
+          MD5_Update (&mdContext, data, bytes);
     }
 
     MD5_Final (c,&mdContext);
     for(int i = 0; i < MD5_DIGEST_LENGTH; i++){
-        snprintf(aux, (MD5_DIGEST_LENGTH*2), "%02x", c[i]); //Importante el x2
+        snprintf(aux, (MD5_DIGEST_LENGTH*2), "%02x", c[i]);
         strcat(md5, aux);
-        //printf("%02x", c[i]);
     }
     fclose(inFile);
-}
-
-/**
- * @brief Graba la iso en el USB
- * @param usb Puntero de arreglo de char que contiene el nombre del usb
- * @param iso Puntero de arreglo de char que contiene el nombre de la iso
- * @return 0
- */
-int burniso(char *usb, char *iso){
-    if(strstr(usb, "sda") !=NULL){
-        printf("Esta intentando escribir el disco\n");
-        exit(EXIT_FAILURE);
-    }
-
-    char i[1] = "";
-    char urlusb[BUFF_SIZE];
-    char urliso[BUFF_SIZE];
-
-    strcpy(urlusb, "/dev/");
-    strcat(urlusb, usb);
-    strcpy(urliso, FOLDER);
-    strcat(urliso, iso);
-    printf("%s\n%s\n", urliso, urlusb);
-    FILE *original = fopen(urliso, "rb");
-    FILE *copia = fopen(urlusb, "wb");
-    if(original == NULL){
-        perror("No se ha podido abrir el archivo: ");
-        fclose(original);
-        fclose(copia);
-        return 0;
-    }
-    if(copia == NULL){
-        perror("No se ha podido acceder al usb: ");
-        fclose(original);
-        fclose(copia);
-        return 0;
-    }
-
-    while(!feof(original)){
-        fread(i, sizeof(char), 1, original);
-        fwrite(i, sizeof(char), 1, copia);
-    }
-    fclose(original);
-    fclose(copia);
-    printf("USB listo\n");
-    return 0;
+    return 1;
 }
 
 /**
@@ -249,6 +214,7 @@ void receivefile(char* msjserver, char *msjclient){
     char buffer[BUFF_SIZE];
     ssize_t receivedbyte;
     double missingbytes;
+    double totalbytes;
     char filesize[BUFF_SIZE];
     char originalmd5[BUFF_SIZE];
     char localmd5[BUFF_SIZE];
@@ -256,10 +222,17 @@ void receivefile(char* msjserver, char *msjclient){
     char isoname[BUFF_SIZE];
     char usbname[BUFF_SIZE];
     int sockfile;
+
+    if(amountspace(msjclient) == 3){
+        sscanf(msjclient, "%*s %*s %*s %s", usbname);
+    }else{
+        printf("No ingreso el usb");
+        exit(EXIT_FAILURE); 
+    }
     
     sockfile = socket(AF_INET, SOCK_STREAM, 0); 
     if (sockfile == -1) { 
-        perror("socket creation failed...\n"); 
+        perror("No se ha podido crear el socket: "); 
         exit(EXIT_FAILURE); 
     }
     struct sockaddr_in * servaddrfile = calloc(1, sizeof (struct sockaddr_in));
@@ -267,44 +240,45 @@ void receivefile(char* msjserver, char *msjclient){
     servaddrfile->sin_port = htons(PORTFILE);
     servaddrfile->sin_addr.s_addr = INADDR_ANY;
     if (connect(sockfile, (struct sockaddr *)  servaddrfile, sizeof (struct sockaddr)) != 0) { 
-        perror("connection with the server failed: "); 
+        perror("Conexion con el servicio de archivos incorrecta: "); 
         exit(EXIT_FAILURE);
     }
 
     sscanf(msjserver, "%*s %*s %*s %*s %*s %*s %*s %*s %s %s", filesize, originalmd5);
     sscanf(msjclient, "%*s %*s %s", isoname);
     strtok(filesize, "B");
-    strcpy(url, FOLDER);
-    strcat(url, isoname);
+    strcpy(url, "/dev/");
+    strcat(url, usbname);
 
     missingbytes = atoi(filesize);
+    totalbytes = missingbytes;
 
-    FILE *image = fopen(url, "wb");
+    FILE *image = fopen(url, "w+b");
     if(image == NULL){
         perror("No se a podido abrir el archivo: ");
         exit(EXIT_FAILURE);
     }
-    while ((receivedbyte = recv(sockfile, buffer, BUFF_SIZE, 0)) > 0){
+    while (1){
+        receivedbyte = recv(sockfile, buffer, BUFF_SIZE, 0);
+        if(receivedbyte == -1){
+            perror("Error en la recepcion de la iso: ");
+            exit(EXIT_FAILURE);
+        }
         fwrite(buffer, sizeof(char), (size_t) receivedbyte, image);
         missingbytes -= (int) receivedbyte;
          if(missingbytes == 0){
              break;
          }
     }
-    printf("HOLAAA\n");
     fclose(image);
 
-    calcmd5(isoname, localmd5);
-    if(strstr(localmd5, originalmd5) != NULL){
-        printf("Transferencia finalizada correctamente. md5:%s\nTabla de particion:\n", localmd5);
-        partitiontable(isoname);
-
-        if(amountspace(msjclient) == 3){
-            sscanf(msjclient, "%*s %*s %*s %s", usbname);
-            burniso(usbname, isoname);
-        }   
-    }else{
-        printf("Transferencia finalizada con errores. md5 obtenido::%s - md5 original%s\n No se procedera a la grabacion del usb", localmd5, originalmd5);
+    if((calcmd5(usbname, localmd5, totalbytes)) == 1){
+        if(strstr(localmd5, originalmd5) != NULL){
+            printf("Transferencia finalizada correctamente. MD5:%s\nTabla de particion:\n", localmd5);
+            partitiontable(usbname);
+        }else{
+            printf("Transferencia finalizada con errores. MD5 obtenido:%s - MD5 original:%s\n", localmd5, originalmd5);
+        }
     }
     close(sockfile);
 }

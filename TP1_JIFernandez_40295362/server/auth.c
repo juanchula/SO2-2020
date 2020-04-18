@@ -8,8 +8,8 @@
 #include "sharedfun.h"
 
 #define BUFF_SIZE 1024
-#define BASE_DATO "/home/juanfernandez/Facu/SO2-2020/TP1_JIFernandez_40295362/bin/database.txt"
-#define BASE_DATO2 "/home/juanfernandez/Facu/SO2-2020/TP1_JIFernandez_40295362/bin/database2.txt"
+#define BASE_DATO "../database.txt"
+#define BASE_DATO2 "../database2.txt"
 #define QUEUEPATH "/auth_service"
 
 void changeline(int line, char *txt){
