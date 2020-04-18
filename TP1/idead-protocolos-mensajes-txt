@@ -33,6 +33,6 @@ pruebita:
 gcc -Wall -Werror -pedantic -Wextra -Wconversion -std=gnu11 -o pruebitas.out pruebitas.c && ./pruebitas.out
 
 
-gcc -std=gnu11  -Wall -Werror -pedantic -Wextra -Wconversion -o /home/juanfernandez/Facu/SO2-2020/TP1_JIFernandez_40295362/bin/client.o main.c -lrt -lssl -lcrypto
+gcc -std=gnu11  -Wall -Werror -pedantic -Wextra -Wconversion -O1 -o /home/juanfernandez/Facu/SO2-2020/TP1_JIFernandez_40295362/bin/client.o main.c -lrt -lssl -lcrypto
 
-gcc -std=gnu11  -Wall -Werror -pedantic -Wextra -Wconversion -o /home/juanfernandez/Facu/SO2-2020/TP1_JIFernandez_40295362/bin/server.o auth.c fileserv.c server.c sharedfun.c -lrt -lssl -lcrypto
+gcc -std=gnu11  -Wall -Werror -pedantic -Wextra -Wconversion -O1 -o /home/juanfernandez/Facu/SO2-2020/TP1_JIFernandez_40295362/bin/server.o auth.c fileserv.c server.c sharedfun.c -lrt -lssl -lcrypto

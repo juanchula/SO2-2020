@@ -22,7 +22,7 @@
 //SACADO DE: https://stackoverflow.com/questions/10324611/how-to-calculate-the-md5-hash-of-a-large-file-in-c
 void calcmd5(char *iso, char *md5){
     bzero(md5, BUFF_SIZE);
-    char aux[2] = "";
+    char aux[32] = "";
     char url[BUFF_SIZE] = DIRECTORY;
     strcat(url, iso);
     unsigned char c[MD5_DIGEST_LENGTH];

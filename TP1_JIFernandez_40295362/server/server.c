@@ -17,12 +17,24 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdbool.h>
+#include <signal.h>
+
 
 #define BUFF_SIZE 1024 
 #define PORT 4444
 #define QUEUEPATHAUTH "/auth_service"
 #define QUEUEPATHFILE "/file_service"
 
+int pid1;
+int pid2;
+
+/**
+ * @brief Funcion para la salida de server. Mata los hijos para que no queden huerfanos
+ */
+void exitserver(){
+    kill(pid1, SIGTERM);
+    kill(pid2, SIGTERM);
+}
 
 /**
  * @brief Realiza la transferencia y recepcion de las colas de mensaje
@@ -56,6 +68,11 @@ int main(){
     int sfd;
     int fdc = -1;
     bool login = false;
+
+    if(atexit(exitserver) != 0){
+        perror("No se pudo registrar la funcion de salida: ");
+        exit(EXIT_FAILURE);
+    }
 
     sfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sfd == -1) { 
@@ -100,10 +117,12 @@ int main(){
             perror("Creating queue");
             exit(EXIT_FAILURE);
     }
-
+    
     pidauth = fork();
+    pid1 = pidauth;
     if(pidauth>0){
         pidfile = fork();
+        pid2 = pidfile;
     }
     if(pidauth == 0){
         amain();

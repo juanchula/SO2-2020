@@ -18,7 +18,7 @@
 #define BUFF_SIZE 1024
 #define PORTMSJ 4444
 #define PORTFILE 5555
-#define PCTERMINAL "juanfernandez@Juan-Lenovo ->"
+#define PCTERMINAL "\033[1m\033[37mJuanfernandez@Juan-Lenovo -> \033[0m"
 
 int fdsocket;
 
@@ -61,14 +61,15 @@ void printspace(long int num){
 /**
  * @brief Muestra la tabla de particion de una iso
  * @param isoname Puntero de arreglo de char que contiene el nombre de la iso
+ * @return 1 si se completo con exito, 0 si fallo
  */
-void partitiontable(char * usb){
+int partitiontable(char * usb){
     char url[BUFF_SIZE];
     unsigned char hex[510];
     char temp[4];
     char typep[4];
     char temp4[60];
-    long int sizep;
+    long int sizep = 0;
     long int startp;
     long int endp;
     int bootp;
@@ -84,10 +85,13 @@ void partitiontable(char * usb){
     FILE *image = fopen(url, "rb");
     if(image == NULL){
             perror("No se a podido abrir el archivo: ");
-            exit(EXIT_FAILURE);
+            return 0;
         }
 
-    fread(hex, 1, sizeof hex, image);
+    if(fread(hex, 1, sizeof hex, image) == 0){
+        perror("No se ha podido obtener la tabla de particion: ");
+        return 0;
+    }
     printf("PARTICION       BOOTEABLE           COMIENZO          FINAL             SECTORES          ID\n");
     while(i>445){
         while(1){
@@ -111,16 +115,13 @@ void partitiontable(char * usb){
             if(z>501 && z<506){
                 strcat(temp4, temp);
                 if(z == 502){
-                    // printf("\nTamaño inicio: %s\n", temp4);
                     startp = (int) strtol(temp4, NULL, 16);
                     bzero(temp4, 60);
                     endp = startp + sizep;
-                    // printf("        %li         %li", endp, startp);
                 }
             }
             if(z == 498){
                 strcpy(typep, temp);
-                // printf("        %s", temp);
             }
             if(z == 494){
                 bootp = (int) strtol(temp, NULL, 16);
@@ -145,6 +146,7 @@ void partitiontable(char * usb){
         j+=16;
     }
     fclose(image);
+    return 1;
 }
 
 /**
@@ -166,7 +168,7 @@ void controlc(){
 //SACADO DE: https://stackoverflow.com/questions/10324611/how-to-calculate-the-md5-hash-of-a-large-file-in-c
 int calcmd5(char *usb, char *md5, double totalbytes){
     bzero(md5, BUFF_SIZE);
-    char aux[2] = "";
+    char aux[32] = "";
     char url[BUFF_SIZE] = "/dev/";
     strcat(url, usb);
     unsigned char c[MD5_DIGEST_LENGTH];
@@ -326,7 +328,7 @@ int main(){
             bzero(msjclient, sizeof(msjclient)); 
             bzero(msjserver, sizeof(msjserver)); 
             printf("%s", PCTERMINAL);
-            fgets(msjclient, BUFF_SIZE-1, stdin );
+            while(fgets(msjclient, BUFF_SIZE-1, stdin ) == 0);
             if(send(sockfd, msjclient, BUFF_SIZE, 0) == -1){
                 perror("No se ha podido enviar un mensaje al servidor: ");
                 exit(EXIT_FAILURE);
