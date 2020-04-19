@@ -123,11 +123,11 @@ void lsuser(char * lsu){
                 habilitado = true;
             }
             strcat(lsu, strtok(txt, "<"));
-            strcat(lsu, "   ");
+            concatspaces(25, txt, lsu);
             if(habilitado){
-                strcat(lsu, "Habilitado   ");
+                strcat(lsu, "Habilitado             ");
             }else{
-                strcat(lsu, "Bloqueado   ");
+                strcat(lsu, "Bloqueado              ");
             }
         }else{
             if(strstr(txt, "?")){

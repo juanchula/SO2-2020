@@ -21,3 +21,12 @@ bool comparetxt(int length, char *txt, char *searchtxt){
         return false;
     }
 }
+
+void concatspaces(int distance, char *word, char *txt){
+    int longword = (int)strlen(word);
+
+    while(distance > longword){
+        strcat(txt, " ");
+        distance--;
+    }
+}

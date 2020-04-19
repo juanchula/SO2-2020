@@ -272,7 +272,11 @@ int main()
     // printf("\n\n %d", numero);
 
 
-    partitiontable4();
+    // partitiontable4();
+    char a[1024];
+    strcpy(a, "perro");
+    size_t b = strlen(a);
+    printf("%li", b);
 
     // char txt[1024];
     // partitiontable(txt);

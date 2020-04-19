@@ -23,4 +23,12 @@
      */
     bool comparetxt(int length, char *txt, char *searchtxt);
 
+     /**
+     * @brief Agrega espacios al final de txt. La cantidad de es igual a distance menos logitud de word
+     * @param distance Numero de espacios que se desea agregar sin contar la longitud de la palabra
+     * @param word Puntero de arreglo  de char de la palabra
+     * @param txt Puntero de arreglo  de char donde se agregaran espacios
+     */
+    void concatspaces(int distance, char *word, char *txt);
+
 #endif

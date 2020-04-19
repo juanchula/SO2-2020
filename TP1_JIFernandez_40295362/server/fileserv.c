@@ -91,9 +91,10 @@ void lsfile(char *txt){
                 s = filesize(iso);
                 sprintf(size, "%ld", s);
                 strcat(txt, iso);
-                strcat(txt, "   ");
+                concatspaces(45, iso, txt);
                 strcat(txt, size);
-                strcat(txt, "B   ");
+                strcat(txt, "B");
+                concatspaces(32, size, txt);
                 strcat(txt, md5);
                 strcat(txt, "\n");
             }
