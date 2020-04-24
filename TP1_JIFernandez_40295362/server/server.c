@@ -27,13 +27,17 @@
 
 int pid1;
 int pid2;
+mqd_t qda;
+mqd_t qdf;
 
 /**
- * @brief Funcion para la salida de server. Mata los hijos para que no queden huerfanos
+ * @brief Funcion para la salida de server. Mata los hijos para que no queden huerfanos y las cola de mensaje
  */
 void exitserver(){
     kill(pid1, SIGTERM);
     kill(pid2, SIGTERM);
+    mq_close(qda);
+    mq_close(qdf);
 }
 
 /**
@@ -105,14 +109,14 @@ int main(){
     char recv_msg[BUFF_SIZE];
 
     /*Cola de mensajes entre servidor primario y servicio de autentificacion*/
-    mqd_t qda = mq_open(QUEUEPATHAUTH, O_RDWR | O_CREAT, 0666 , &queue_atributes);
+    qda = mq_open(QUEUEPATHAUTH, O_RDWR | O_CREAT, 0666 , &queue_atributes);
     if (qda == -1){
             perror("Error al crear/unirse a la cola en el servidor principal: ");
             exit(EXIT_FAILURE);
     }
 
     /*Cola de mensajes entre servidor primario y servicio de archivos*/
-    mqd_t qdf = mq_open(QUEUEPATHFILE, O_RDWR | O_CREAT, 0666 , &queue_atributes);
+    qdf = mq_open(QUEUEPATHFILE, O_RDWR | O_CREAT, 0666 , &queue_atributes);
     if (qdf == -1){
             perror("Creating queue");
             exit(EXIT_FAILURE);

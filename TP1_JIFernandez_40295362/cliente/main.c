@@ -18,9 +18,24 @@
 #define BUFF_SIZE 1024
 #define PORTMSJ 4444
 #define PORTFILE 5555
-#define PCTERMINAL "\033[1m\033[37mJuanfernandez@Juan-Lenovo -> \033[0m"
+#define PCTERMINAL "\033[1m\033[37mUsuario@PC-Usuario -> \033[0m"
 
 int fdsocket;
+
+ /**
+ * @brief Verifica si 2 arreglo de char contienen lo mismo
+ * @param length Longitud de la frase/palabra a comparar
+ * @param txt Puntero de arreglo de char a comparar
+ * @param searchtxt Puntero de arreglo  de char a comparar
+ * @return True si los contenidos son iguales y false si no
+ */
+bool comparetxt(int length, char *txt, char *searchtxt){
+    if(length == (int) strlen(txt) && strstr(txt, searchtxt) != NULL){
+        return true;
+    }else{
+        return false;
+    }
+}
 
 /**
  * @brief Calcula la cantidad de espacios del contenido del arreglo de char
@@ -60,7 +75,7 @@ void printspace(long int num){
 
 /**
  * @brief Muestra la tabla de particion de una iso
- * @param isoname Puntero de arreglo de char que contiene el nombre de la iso
+ * @param usb Puntero de arreglo de char que contiene el nombre del usb
  * @return 1 si se completo con exito, 0 si fallo
  */
 int partitiontable(char * usb){
@@ -165,7 +180,6 @@ void controlc(){
  * @param totalbytes tamaño del archivo
  * @return 1 si se completo con exito, 0 si fallo
  */
-//SACADO DE: https://stackoverflow.com/questions/10324611/how-to-calculate-the-md5-hash-of-a-large-file-in-c
 int calcmd5(char *usb, char *md5, double totalbytes){
     bzero(md5, BUFF_SIZE);
     char aux[32] = "";
@@ -210,7 +224,7 @@ int calcmd5(char *usb, char *md5, double totalbytes){
 /**
  * @brief Realiza la recepcion de la iso y luego muestra la tabla de particiones y verifica el MD5
  * @param msjserver Puntero de arreglo de char que contiene el tamaño y md5 de la iso entre otras cosas
- * @param msjclient Puntero de arreglo de char que contiene el nobmre del archivo entre otras cosas
+ * @param msjclient Puntero de arreglo de char que contiene el nobmre del usb
  */
 void receivefile(char* msjserver, char *msjclient){
     char buffer[BUFF_SIZE];
@@ -332,6 +346,9 @@ int main(){
             if(send(sockfd, msjclient, BUFF_SIZE, 0) == -1){
                 perror("No se ha podido enviar un mensaje al servidor: ");
                 exit(EXIT_FAILURE);
+            }
+            if(comparetxt(5, msjclient, "exit")){
+                return 0;
             }
 
             if(recv(sockfd,msjserver, BUFF_SIZE, 0) == -1){
