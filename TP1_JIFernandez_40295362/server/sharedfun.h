@@ -2,7 +2,6 @@
  * @file sharedfun.h
  * @author Juan Ignacio Fernandez
  */
-
 #include <stdbool.h>
 #ifndef _SHAREDFUN_H_
 #define _SHAREDFUN_H_

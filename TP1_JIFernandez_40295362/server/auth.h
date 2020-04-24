@@ -2,7 +2,6 @@
  * @file auth.h
  * @author Juan Ignacio Fernandez
  */
-
 #include <stdbool.h>
 #ifndef _AUTH_H_
 #define _AUTH_H_
